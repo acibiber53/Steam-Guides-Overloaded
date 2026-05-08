@@ -10,11 +10,15 @@
     "matches": [
       "*://store.steampowered.com/app/*",
       "*://steamcommunity.com/*/guides/*",
-      "*://steamcommunity.com/sharedfiles/editguide*"
+      "*://steamcommunity.com/sharedfiles/editguide*",
+      "*://steamcommunity.com/sharedfiles/manageguide*",
+      "*://steamcommunity.com/sharedfiles/editguidesubsection*"
     ],
     "js": [
       "src/feature/navigation/store-button.js",
-      "src/feature/editor/guide-helpers.js",
+      "src/feature/guide/editguide-helpers.js",
+      "src/feature/guide/manageguide-sections.js",
+      "src/feature/guide/editguidesubsection-editor.js",
       "src/content.js"
     ],
     "css": ["src/content.css"],
