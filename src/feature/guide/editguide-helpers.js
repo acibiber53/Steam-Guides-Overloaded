@@ -68,13 +68,13 @@
       const toolbar = document.createElement('div');
       toolbar.className = 'sgo-bbcode-toolbar';
       toolbar.innerHTML = `
-        <button data-tag="b" title="Bold">B</button>
-        <button data-tag="i" title="Italic">I</button>
-        <button data-tag="u" title="Underline">U</button>
-        <button data-tag="strike" title="Strikethrough">S</button>
-        <button data-tag="url" title="Link">🔗</button>
-        <button data-tag="table" title="Table">▦</button>
-        <button data-tag="spoiler" title="Spoiler">👁️</button>
+        <button type="button" data-tag="b" title="Bold">B</button>
+        <button type="button" data-tag="i" title="Italic">I</button>
+        <button type="button" data-tag="u" title="Underline">U</button>
+        <button type="button" data-tag="strike" title="Strikethrough">S</button>
+        <button type="button" data-tag="url" title="Link">🔗</button>
+        <button type="button" data-tag="table" title="Table">▦</button>
+        <button type="button" data-tag="spoiler" title="Spoiler">👁️</button>
         <select class="sgo-template-select">
           <option value="">📋 Insert Template...</option>
           ${Object.keys(TEMPLATES).map(k => `<option value="${k}">${k.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>`).join('')}
@@ -141,7 +141,8 @@
 
     // Category Tip
     const tagContainer = document.querySelector('#checkboxgroup_0');
-    if (tagContainer) {
+    if (tagContainer && !tagContainer.dataset.sgoTipInjected) {
+      tagContainer.dataset.sgoTipInjected = 'true';
       const tip = document.createElement('div');
       tip.className = 'sgo-helper-tip';
       tip.innerHTML = '💡 <b>Achievement guides:</b> Check "Achievements" + "Walkthroughs". Avoid "Modding" unless applicable.';

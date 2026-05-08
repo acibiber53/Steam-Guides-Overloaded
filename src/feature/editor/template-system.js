@@ -563,18 +563,18 @@ Link to interactive maps or screenshots showing locations
       <div class="sgo-tm-header">
         <h4>📋 Template Manager</h4>
         <div class="sgo-tm-actions">
-          <button class="sgo-tm-btn" id="sgo-tm-export" title="Export all templates">⬇ Export</button>
-          <button class="sgo-tm-btn" id="sgo-tm-import" title="Import templates">⬆ Import</button>
-          <button class="sgo-tm-btn" id="sgo-tm-new" title="Create new template">➕ New</button>
+          <button type="button" class="sgo-tm-btn" id="sgo-tm-export" title="Export all templates">⬇ Export</button>
+          <button type="button" class="sgo-tm-btn" id="sgo-tm-import" title="Import templates">⬆ Import</button>
+          <button type="button" class="sgo-tm-btn" id="sgo-tm-new" title="Create new template">➕ New</button>
         </div>
         <input type="file" id="sgo-tm-import-file" accept=".json" style="display:none">
       </div>
       <div class="sgo-tm-categories">
-        <button class="sgo-tm-cat active" data-cat="all">All</button>
-        <button class="sgo-tm-cat" data-cat="achievements">Achievements</button>
-        <button class="sgo-tm-cat" data-cat="walkthrough">Walkthrough</button>
-        <button class="sgo-tm-cat" data-cat="formatting">Formatting</button>
-        <button class="sgo-tm-cat" data-cat="specialized">Specialized</button>
+        <button type="button" class="sgo-tm-cat active" data-cat="all">All</button>
+        <button type="button" class="sgo-tm-cat" data-cat="achievements">Achievements</button>
+        <button type="button" class="sgo-tm-cat" data-cat="walkthrough">Walkthrough</button>
+        <button type="button" class="sgo-tm-cat" data-cat="formatting">Formatting</button>
+        <button type="button" class="sgo-tm-cat" data-cat="specialized">Specialized</button>
       </div>
       <div class="sgo-tm-list"></div>
     `;
@@ -600,8 +600,8 @@ Link to interactive maps or screenshots showing locations
           </div>
           <div class="sgo-tm-item-desc">${t.description || ''}</div>
           <div class="sgo-tm-item-actions">
-            <button class="sgo-tm-use" data-key="${key}">Use</button>
-            ${t.isCustom ? `<button class="sgo-tm-delete" data-key="${key}">Delete</button>` : ''}
+            <button type="button" class="sgo-tm-use" data-key="${key}">Use</button>
+            ${t.isCustom ? `<button type="button" class="sgo-tm-delete" data-key="${key}">Delete</button>` : ''}
           </div>
         </div>
       `;
@@ -653,13 +653,13 @@ Link to interactive maps or screenshots showing locations
       <div class="sgo-tm-preview-content">
         <div class="sgo-tm-preview-header">
           <h4>${template.name}</h4>
-          <button class="sgo-tm-close">✕</button>
+          <button type="button" class="sgo-tm-close">✕</button>
         </div>
         <div class="sgo-tm-preview-body">
           <pre>${template.content}</pre>
         </div>
         <div class="sgo-tm-preview-footer">
-          <button class="sgo-tm-insert">Insert Template</button>
+          <button type="button" class="sgo-tm-insert">Insert Template</button>
         </div>
       </div>
     `;
