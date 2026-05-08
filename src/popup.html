@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Steam Guides Overloaded</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Steam Guides Overloaded</h1>
+      <p id="status">Checking current page...</p>
+    </header>
+
+    <div id="app-info" class="hidden">
+      <div class="app-id">App ID: <span id="appid-display">-</span></div>
+      <div class="buttons">
+        <button id="btn-create-guide" class="btn primary">📖 Create New Guide</button>
+        <button id="btn-achievements" class="btn secondary">🏆 View Achievements</button>
+        <button id="btn-guides-hub" class="btn secondary">📊 All Guides</button>
+      </div>
+    </div>
+
+    <div id="no-appid" class="hidden">
+      <p>Not on a Steam game page.</p>
+      <p class="hint">Navigate to a Store or Community game page to unlock quick actions.</p>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

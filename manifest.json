@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Steam Guides Overloaded",
+  "version": "0.1.1",
+  "description": "Enhanced navigation, character counting, and BBCode validation for Steam guide authors.",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["*://steamcommunity.com/*", "*://store.steampowered.com/*"],
+  "action": {
+    "default_popup": "src/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://store.steampowered.com/app/*", "*://steamcommunity.com/*/guides/*"],
+      "js": ["src/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
