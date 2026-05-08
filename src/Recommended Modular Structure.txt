@@ -1,0 +1,38 @@
+src/
+├── content.js                 # Entry point: router + initialization
+├── content.css                # Shared styles for all injected UI
+│
+├── core/
+│   ├── steam-detector.js      # URL/AppID detection utilities
+│   ├── dom-utils.js           # Safe injection, MutationObserver helpers
+│   └── storage.js             # chrome.storage.local wrapper
+│
+├── features/
+│   ├── navigation/            # Phase 1
+│   │   ├── store-button.js    # Inject "Create Guide" on store pages
+│   │   └── quick-links.js     # Popup shortcut handlers
+│   │
+│   ├── editor/                # Phase 2
+│   │   ├── field-helpers.js   # Character counters, BBCode toolbar
+│   │   ├── validator.js       # Context-aware tag validation
+│   │   └── template-system.js # Pre-built guide structures
+│   │
+│   ├── achievements/          # Phase 3
+│   │   ├── csv-importer.js    # Parse achievement CSVs
+│   │   ├── image-resizer.js   # Canvas-based 64x64 resizing
+│   │   └── bbcode-generator.js# Auto-generate achievement tables
+│   │
+│   └── polish/                # Phase 4
+│       ├── preview-pane.js    # Live BBCode → HTML preview
+│       ├── draft-manager.js   # Autosave/restore logic
+│       └── export-utils.js    # JSON/clipboard export
+│
+├── pages/                     # Page-specific routers
+│   ├── store-page.js          # Logic for /app/* pages
+│   ├── guide-editor.js        # Logic for /sharedfiles/editguide*
+│   └── guide-viewer.js        # Logic for /sharedfiles/filedetails*
+│
+└── utils/
+    ├── bbcode-parser.js       # Steam-specific BBCode quirks
+    ├── logger.js              # Conditional console logging
+    └── debounce.js            # Utility for event throttling

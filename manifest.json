@@ -1,18 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Steam Guides Overloaded",
-  "version": "0.1.1",
-  "description": "Enhanced navigation, character counting, and BBCode validation for Steam guide authors.",
+  "version": "0.2.0",
+  "description": "Enhanced navigation, real-time validation, and achievement workflow for Steam guide authors.",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["*://steamcommunity.com/*", "*://store.steampowered.com/*"],
-  "action": {
-    "default_popup": "src/popup.html"
-  },
-  "content_scripts": [
-    {
-      "matches": ["*://store.steampowered.com/app/*", "*://steamcommunity.com/*/guides/*"],
-      "js": ["src/content.js"],
-      "run_at": "document_idle"
-    }
-  ]
+  "action": { "default_popup": "src/core/popup/popup.html" },
+  "content_scripts": [{
+    "matches": [
+      "*://store.steampowered.com/app/*",
+      "*://steamcommunity.com/*/guides/*",
+      "*://steamcommunity.com/sharedfiles/editguide*"
+    ],
+    "js": [
+      "src/feature/navigation/store-button.js",
+      "src/feature/editor/guide-helpers.js",
+      "src/content.js"
+    ],
+    "css": ["src/content.css"],
+    "run_at": "document_idle"
+  }]
 }
