@@ -555,62 +555,96 @@ Link to interactive maps or screenshots showing locations
     });
   }
 
-  // Create template manager UI panel
-  function createTemplateManager() {
-    const panel = document.createElement('div');
-    panel.className = 'sgo-template-manager';
-    panel.innerHTML = `
-      <div class="sgo-tm-header">
-        <h4>📋 Template Manager</h4>
-        <div class="sgo-tm-actions">
-          <button type="button" class="sgo-tm-btn" id="sgo-tm-export" title="Export all templates">⬇ Export</button>
-          <button type="button" class="sgo-tm-btn" id="sgo-tm-import" title="Import templates">⬆ Import</button>
-          <button type="button" class="sgo-tm-btn" id="sgo-tm-new" title="Create new template">➕ New</button>
+ // Create template manager sidepanel
+  function createTemplateSidepanel() {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'sgo-sidepanel-wrapper';
+    wrapper.innerHTML = `
+      <div class="sgo-sidepanel-toggle" id="sgo-template-toggle">
+        <span class="toggle-icon">📋</span>
+        <span class="toggle-text">Templates</span>
+      </div>
+      <div class="sgo-sidepanel" id="sgo-template-sidepanel">
+        <div class="sgo-sp-header">
+          <div class="sgo-sp-title">
+            <span class="title-icon">📋</span>
+            <h4>Template Library</h4>
+          </div>
+          <button class="sgo-sp-close" id="sgo-sp-close" title="Close panel">✕</button>
         </div>
-        <input type="file" id="sgo-tm-import-file" accept=".json" style="display:none">
+        <div class="sgo-sp-content">
+          <div class="sgo-sp-actions">
+            <button class="sgo-sp-btn" id="sgo-sp-new" title="Create new template">➕ New</button>
+            <button class="sgo-sp-btn" id="sgo-sp-export" title="Export all templates">⬇ Export</button>
+            <button class="sgo-sp-btn" id="sgo-sp-import" title="Import templates">⬆ Import</button>
+            <input type="file" id="sgo-sp-import-file" accept=".json" style="display:none">
+          </div>
+          <div class="sgo-sp-search">
+            <input type="text" id="sgo-sp-search" placeholder="Search templates..." autocomplete="off">
+          </div>
+          <div class="sgo-sp-categories">
+            <button class="sgo-sp-cat active" data-cat="all">All</button>
+            <button class="sgo-sp-cat" data-cat="achievements">🏆</button>
+            <button class="sgo-sp-cat" data-cat="walkthrough">📖</button>
+            <button class="sgo-sp-cat" data-cat="formatting">✨</button>
+            <button class="sgo-sp-cat" data-cat="specialized">🎯</button>
+          </div>
+          <div class="sgo-sp-list"></div>
+        </div>
       </div>
-      <div class="sgo-tm-categories">
-        <button type="button" class="sgo-tm-cat active" data-cat="all">All</button>
-        <button type="button" class="sgo-tm-cat" data-cat="achievements">Achievements</button>
-        <button type="button" class="sgo-tm-cat" data-cat="walkthrough">Walkthrough</button>
-        <button type="button" class="sgo-tm-cat" data-cat="formatting">Formatting</button>
-        <button type="button" class="sgo-tm-cat" data-cat="specialized">Specialized</button>
-      </div>
-      <div class="sgo-tm-list"></div>
     `;
-    
-    return panel;
+
+    return wrapper;
   }
 
-  // Render template list
-  async function renderTemplateList(container, filter = 'all') {
+  // Render template list for sidepanel
+  async function renderTemplateList(container, filter = 'all', searchQuery = '') {
     const templates = await getAllTemplates();
-    const list = container.querySelector('.sgo-tm-list');
-    
+    const list = container.querySelector('.sgo-sp-list');
+
     let html = '';
     Object.keys(templates).forEach(key => {
       const t = templates[key];
       if (filter !== 'all' && t.category !== filter) return;
-      
+
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = t.name.toLowerCase().includes(query);
+        const matchesDesc = (t.description || '').toLowerCase().includes(query);
+        const matchesContent = t.content.toLowerCase().includes(query);
+        if (!matchesName && !matchesDesc && !matchesContent) return;
+      }
+
+      const categoryIcons = {
+        'achievements': '🏆',
+        'walkthrough': '📖',
+        'formatting': '✨',
+        'specialized': '🎯'
+      };
+
       html += `
-        <div class="sgo-tm-item ${t.isCustom ? 'sgo-tm-custom' : ''}" data-key="${key}">
-          <div class="sgo-tm-item-header">
-            <span class="sgo-tm-item-name">${t.name}</span>
-            ${t.isCustom ? '<span class="sgo-tm-badge">Custom</span>' : ''}
+        <div class="sgo-sp-item ${t.isCustom ? 'sgo-sp-custom' : ''}" data-key="${key}">
+          <div class="sgo-sp-item-header">
+            <span class="sgo-sp-item-icon">${categoryIcons[t.category] || '📄'}</span>
+            <div class="sgo-sp-item-info">
+              <span class="sgo-sp-item-name">${t.name}</span>
+              ${t.isCustom ? '<span class="sgo-sp-badge">Custom</span>' : ''}
+            </div>
           </div>
-          <div class="sgo-tm-item-desc">${t.description || ''}</div>
-          <div class="sgo-tm-item-actions">
-            <button type="button" class="sgo-tm-use" data-key="${key}">Use</button>
-            ${t.isCustom ? `<button type="button" class="sgo-tm-delete" data-key="${key}">Delete</button>` : ''}
+          <div class="sgo-sp-item-desc">${t.description || 'No description'}</div>
+          <div class="sgo-sp-item-actions">
+            <button class="sgo-sp-use" data-key="${key}" title="Insert template">Insert</button>
+            ${t.isCustom ? `<button class="sgo-sp-delete" data-key="${key}" title="Delete template">Delete</button>` : ''}
           </div>
         </div>
       `;
     });
-    
-    list.innerHTML = html || '<div class="sgo-tm-empty">No templates in this category</div>';
-    
+
+    list.innerHTML = html || '<div class="sgo-sp-empty">No templates found</div>';
+
     // Bind events
-    list.querySelectorAll('.sgo-tm-use').forEach(btn => {
+    list.querySelectorAll('.sgo-sp-use').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const key = btn.dataset.key;
@@ -621,18 +655,18 @@ Link to interactive maps or screenshots showing locations
       });
     });
     
-    list.querySelectorAll('.sgo-tm-delete').forEach(btn => {
+    list.querySelectorAll('.sgo-sp-delete').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const key = btn.dataset.key;
         if (confirm(`Delete custom template "${key}"?`)) {
           deleteCustomTemplate(key);
-          renderTemplateList(container, filter);
+          renderTemplateList(container, filter, searchQuery);
         }
       });
     });
     
-    list.querySelectorAll('.sgo-tm-item').forEach(item => {
+    list.querySelectorAll('.sgo-sp-item').forEach(item => {
       item.addEventListener('click', () => {
         const key = item.dataset.key;
         const t = templates[key];
@@ -684,87 +718,174 @@ Link to interactive maps or screenshots showing locations
     });
   }
 
-  // Initialize template manager in a sidebar or panel
-  function initTemplateManager() {
+  // Initialize template sidepanel
+  function initTemplateSidepanel() {
     // Check if we're on the guide editor page
     if (!/steamcommunity\.com\/sharedfiles\/editguide/.test(window.location.href)) {
       return;
     }
     
-    LOG('Initializing Template Manager...');
+    LOG('Initializing Template Sidepanel...');
     
-    // Wait for the description field to be available
+    // Wait for the page to be ready
     const observer = new MutationObserver((mutations, obs) => {
       const descField = document.querySelector('#description');
       if (!descField) return;
       
       obs.disconnect();
       
-      // Create and inject the template manager panel
-      const manager = createTemplateManager();
-      manager.id = 'sgo-template-manager';
-      
-      // Insert near the description field
-      const descContainer = descField.closest('div') || descField.parentNode;
-      if (descContainer) {
-        descContainer.parentNode.insertBefore(manager, descContainer.nextSibling);
-      }
+      // Create and inject the sidepanel
+      const sidepanel = createTemplateSidepanel();
+      sidepanel.id = 'sgo-template-sidepanel-wrapper';
+      document.body.appendChild(sidepanel);
+
+      const panel = document.querySelector('#sgo-template-sidepanel');
+      const toggle = document.querySelector('#sgo-template-toggle');
+
+      // Toggle panel visibility
+      toggle.addEventListener('click', () => {
+        panel.classList.toggle('open');
+        toggle.classList.toggle('active');
+      });
+
+      // Close button
+      document.querySelector('#sgo-sp-close').addEventListener('click', () => {
+        panel.classList.remove('open');
+        toggle.classList.remove('active');
+      });
       
       // Initial render
-      renderTemplateList(manager);
+      renderTemplateList(sidepanel);
       
       // Category filter buttons
-      manager.querySelectorAll('.sgo-tm-cat').forEach(btn => {
+      sidepanel.querySelectorAll('.sgo-sp-cat').forEach(btn => {
         btn.addEventListener('click', () => {
-          manager.querySelectorAll('.sgo-tm-cat').forEach(b => b.classList.remove('active'));
+          sidepanel.querySelectorAll('.sgo-sp-cat').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          renderTemplateList(manager, btn.dataset.cat);
+          renderTemplateList(sidepanel, btn.dataset.cat);
         });
       });
-      
-      // Export button
-      manager.querySelector('#sgo-tm-export').addEventListener('click', exportTemplates);
-      
-      // Import button
-      manager.querySelector('#sgo-tm-import').addEventListener('click', () => {
-        document.getElementById('sgo-tm-import-file').click();
+
+      // Search functionality
+      const searchInput = document.querySelector('#sgo-sp-search');
+      let searchTimeout;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          const activeCat = sidepanel.querySelector('.sgo-sp-cat.active').dataset.cat;
+          renderTemplateList(sidepanel, activeCat, searchInput.value.trim());
+        }, 300);
       });
-      
-      manager.querySelector('#sgo-tm-import-file').addEventListener('change', (e) => {
+
+      // Export button
+      document.querySelector('#sgo-sp-export').addEventListener('click', exportTemplates);
+
+      // Import button
+      document.querySelector('#sgo-sp-import').addEventListener('click', () => {
+        document.getElementById('sgo-sp-import-file').click();
+      });
+
+      document.querySelector('#sgo-sp-import-file').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
           importTemplates(file).then(() => {
-            renderTemplateList(manager);
+            const activeCat = sidepanel.querySelector('.sgo-sp-cat.active').dataset.cat;
+            const query = searchInput.value.trim();
+            renderTemplateList(sidepanel, activeCat, query);
             e.target.value = ''; // Reset input
           }).catch(err => {
             alert('Failed to import templates: ' + err.message);
           });
         }
       });
-      
-      // New template button
-      manager.querySelector('#sgo-tm-new').addEventListener('click', () => {
-        const key = prompt('Enter template ID (lowercase, hyphens):');
-        if (!key) return;
-        
-        const name = prompt('Enter template name:');
-        if (!name) return;
-        
-        const description = prompt('Enter template description:');
-        const category = prompt('Enter category (achievements/walkthrough/formatting/specialized):', 'formatting');
-        
-        // Create a simple template editor
-        const content = prompt('Enter template content (BBCode):');
-        if (!content) return;
-        
-        saveCustomTemplate(key, { name, description, category, content });
-        renderTemplateList(manager);
+
+      // New template button - improved with better UI
+      document.querySelector('#sgo-sp-new').addEventListener('click', () => {
+        showCreateTemplateModal(sidepanel);
       });
-      
-      LOG('✅ Template Manager initialized');
+
+      LOG('✅ Template Sidepanel initialized');
     });
-    
+
     observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // Show create/edit template modal
+  function showCreateTemplateModal(container) {
+    const existing = document.querySelector('.sgo-sp-create-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'sgo-sp-create-modal';
+    modal.innerHTML = `
+      <div class="sgo-sp-modal-content">
+        <div class="sgo-sp-modal-header">
+          <h4>Create New Template</h4>
+          <button class="sgo-sp-modal-close">✕</button>
+        </div>
+        <div class="sgo-sp-modal-body">
+          <div class="sgo-form-group">
+            <label>Template ID (lowercase, hyphens)</label>
+            <input type="text" id="sgo-tpl-id" placeholder="my-custom-template">
+          </div>
+          <div class="sgo-form-group">
+            <label>Template Name</label>
+            <input type="text" id="sgo-tpl-name" placeholder="My Custom Template">
+          </div>
+          <div class="sgo-form-group">
+            <label>Description</label>
+            <input type="text" id="sgo-tpl-desc" placeholder="Brief description">
+          </div>
+          <div class="sgo-form-group">
+            <label>Category</label>
+            <select id="sgo-tpl-category">
+              <option value="achievements">🏆 Achievements</option>
+              <option value="walkthrough">📖 Walkthrough</option>
+              <option value="formatting" selected>✨ Formatting</option>
+              <option value="specialized">🎯 Specialized</option>
+            </select>
+          </div>
+          <div class="sgo-form-group">
+            <label>Content (BBCode)</label>
+            <textarea id="sgo-tpl-content" rows="10" placeholder="[h2]Section[/h2]\nYour content here..."></textarea>
+          </div>
+        </div>
+        <div class="sgo-sp-modal-footer">
+          <button class="sgo-sp-modal-cancel">Cancel</button>
+          <button class="sgo-sp-modal-save">Save Template</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector('.sgo-sp-modal-close').addEventListener('click', () => modal.remove());
+    modal.querySelector('.sgo-sp-modal-cancel').addEventListener('click', () => modal.remove());
+    modal.querySelector('.sgo-sp-modal-save').addEventListener('click', () => {
+      const key = document.querySelector('#sgo-tpl-id').value.trim();
+      const name = document.querySelector('#sgo-tpl-name').value.trim();
+      const description = document.querySelector('#sgo-tpl-desc').value.trim();
+      const category = document.querySelector('#sgo-tpl-category').value;
+      const content = document.querySelector('#sgo-tpl-content').value;
+
+      if (!key || !name || !content) {
+        alert('Please fill in all required fields (ID, Name, Content)');
+        return;
+      }
+
+      if (!/^[a-z0-9-]+$/.test(key)) {
+        alert('Template ID must contain only lowercase letters, numbers, and hyphens');
+        return;
+      }
+
+      saveCustomTemplate(key, { name, description, category, content });
+      renderTemplateList(container);
+      modal.remove();
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
   }
 
   // Expose API
@@ -777,13 +898,14 @@ Link to interactive maps or screenshots showing locations
     deleteCustom: deleteCustomTemplate,
     export: exportTemplates,
     import: importTemplates,
-    initManager: initTemplateManager
+    initManager: initTemplateSidepanel,
+    initSidepanel: initTemplateSidepanel
   };
   
   // Auto-initialize when loaded
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTemplateManager);
+    document.addEventListener('DOMContentLoaded', initTemplateSidepanel);
   } else {
-    initTemplateManager();
+    initTemplateSidepanel();
   }
 })();
