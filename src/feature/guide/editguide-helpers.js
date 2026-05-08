@@ -1,7 +1,7 @@
-// src/features/editor/guide-helpers.js
+// src/features/guide/editguide-helpers.js
 (function() {
   'use strict';
-  const LOG = msg => console.log('[SGO:Editor]', msg);
+  const LOG = msg => console.log('[SGO:EditGuide]', msg);
 
   // 📦 Template Library (Extend this object to add more)
   const TEMPLATES = {
@@ -119,8 +119,8 @@
   }
 
   // 🚀 Main Initialization
-  function setupEditor() {
-    LOG('🔍 Initializing guide editor helpers...');
+  function setupEditGuide() {
+    LOG('🔍 Initializing editguide helpers (Basic Guide Information)...');
     const form = document.querySelector('#SubmitGuideForm');
     if (!form) return false;
 
@@ -148,17 +148,17 @@
       tagContainer.parentNode.insertBefore(tip, tagContainer.nextSibling);
     }
 
-    LOG('✅ Editor helpers active');
+    LOG('✅ EditGuide helpers active');
     return true;
   }
 
   // Expose to router
   window.SGO = window.SGO || {};
-  window.SGO.initGuideEditor = function() {
+  window.SGO.initEditGuide = function() {
     const observer = new MutationObserver((mutations, obs) => {
-      if (setupEditor()) obs.disconnect();
+      if (setupEditGuide()) obs.disconnect();
     });
     observer.observe(document.body, { childList: true, subtree: true });
-    setTimeout(() => setupEditor(), 1500); // Fallback if DOM loads fast
+    setTimeout(() => setupEditGuide(), 1500); // Fallback if DOM loads fast
   };
 })();
