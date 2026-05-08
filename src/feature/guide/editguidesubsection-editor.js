@@ -1,0 +1,148 @@
+// src/features/guide/editguidesubsection-editor.js
+(function() {
+  'use strict';
+  const LOG = msg => console.log('[SGO:EditSubsection]', msg);
+
+  // 📦 Template Library for Subsections
+  const SUBSECTION_TEMPLATES = {
+    'step-list': `[b]Step 1:[/b] Description of first step.
+[b]Step 2:[/b] Description of second step.`,
+    'tips-box': `[h3]💡 Tips[/h3]
+[list]
+[*]Helpful tip here
+[*]Another useful hint
+[/list]`,
+    'warning-box': `[h3]⚠️ Warning[/h3]
+[spoiler]Important warning or spoiler content here.[/spoiler]`
+  };
+
+  // 🔧 Safe DOM Injection
+  function injectHelper(selector, config) {
+    const field = document.querySelector(selector);
+    if (!field || field.dataset.sgoHelperInjected) return;
+    field.dataset.sgoHelperInjected = 'true';
+
+    const helper = document.createElement('div');
+    helper.className = 'sgo-field-helper';
+    helper.innerHTML = config.html || '';
+
+    if (field.parentNode) {
+      field.parentNode.insertBefore(helper, field.nextSibling);
+    }
+
+    if (config.onMount) config.onMount(field, helper);
+  }
+
+  // 📊 Character Counter with Thresholds
+  function createCounter(maxLen, warningPct = 0.75, criticalPct = 0.9) {
+    return (field, helper) => {
+      const countEl = document.createElement('span');
+      countEl.className = 'sgo-counter';
+      countEl.textContent = `0/${maxLen}`;
+      helper.appendChild(countEl);
+
+      const update = () => {
+        const len = field.value.length;
+        countEl.textContent = `${len}/${maxLen}`;
+        const pct = len / maxLen;
+        helper.classList.toggle('sgo-warning', pct >= warningPct && pct < criticalPct);
+        helper.classList.toggle('sgo-critical', pct >= criticalPct);
+      };
+
+      field.addEventListener('input', update);
+      update();
+    };
+  }
+
+  // 🛠️ BBCode Toolbar & Template Dropdown
+  function createToolbar() {
+    return (field, helper) => {
+      const toolbar = document.createElement('div');
+      toolbar.className = 'sgo-bbcode-toolbar';
+      toolbar.innerHTML = `
+        <button data-tag="b" title="Bold">B</button>
+        <button data-tag="i" title="Italic">I</button>
+        <button data-tag="u" title="Underline">U</button>
+        <button data-tag="strike" title="Strikethrough">S</button>
+        <button data-tag="url" title="Link">🔗</button>
+        <button data-tag="table" title="Table">▦</button>
+        <button data-tag="spoiler" title="Spoiler">👁️</button>
+        <select class="sgo-template-select">
+          <option value="">📋 Insert Template...</option>
+          ${Object.keys(SUBSECTION_TEMPLATES).map(k => `<option value="${k}">${k.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>`).join('')}
+        </select>
+      `;
+
+      helper.appendChild(toolbar);
+
+      toolbar.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON' && e.target.dataset.tag) {
+          wrapSelection(field, e.target.dataset.tag);
+          field.focus();
+        }
+      });
+
+      const select = toolbar.querySelector('.sgo-template-select');
+      select.addEventListener('change', () => {
+        const template = select.value;
+        if (template && SUBSECTION_TEMPLATES[template]) {
+          insertAtCursor(field, SUBSECTION_TEMPLATES[template]);
+          field.focus();
+          select.value = ''; // Reset after use
+        }
+      });
+    };
+  }
+
+  function wrapSelection(textarea, tag) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    const wrapped = `[${tag}]${selected}[/${tag}]`;
+    textarea.value = textarea.value.substring(0, start) + wrapped + textarea.value.substring(end);
+    textarea.setSelectionRange(start + tag.length + 2, start + tag.length + 2 + selected.length);
+  }
+
+  function insertAtCursor(textarea, text) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    textarea.value = textarea.value.substring(0, start) + text + textarea.value.substring(end);
+    textarea.setSelectionRange(start + text.length, start + text.length);
+  }
+
+  // 🚀 Main Initialization
+  function setupEditSubsection() {
+    LOG('🔍 Initializing editguidesubsection helpers (Section Content Editor)...');
+    
+    const form = document.querySelector('#SubmitGuideForm, .subsection_form');
+    if (!form) return false;
+
+    // Section Title Counter
+    injectHelper('#sectiontitle, input[name="sectiontitle"]', {
+      html: '<span class="sgo-helper-label">Section Title</span>',
+      onMount: createCounter(128)
+    });
+
+    // Section Body Counter + BBCode Toolbar + Templates
+    injectHelper('#sectiontext, textarea[name="sectiontext"], #description', {
+      html: '<span class="sgo-helper-label">Section Content</span>',
+      onMount: (field, helper) => {
+        createCounter(8000)(field, helper);
+        createToolbar()(field, helper);
+      }
+    });
+
+    LOG('✅ EditSubsection helpers active');
+    return true;
+  }
+
+  // Expose to router
+  window.SGO = window.SGO || {};
+  window.SGO.initEditSubsection = function() {
+    const observer = new MutationObserver((mutations, obs) => {
+      if (setupEditSubsection()) obs.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    setTimeout(() => setupEditSubsection(), 1500); // Fallback if DOM loads fast
+  };
+})();
