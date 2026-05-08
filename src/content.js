@@ -1,89 +1,61 @@
 (function() {
   'use strict';
-  const EXT_NAME = '[Steam Guides Overloaded]';
+  const LOG = msg => console.log('[Steam Guides Overloaded]', msg);
 
-  // =====================================================
-  // STORE PAGE: Inject "Create Guide" Button (BEFORE Community Hub)
-  // =====================================================
   function injectStoreGuideButton() {
-    console.log(EXT_NAME, 'injectStoreGuideButton() called');
+    LOG('injectStoreGuideButton() called');
 
-    // 1. Extract AppID from URL
+    // 1. Extract AppID
     const urlMatch = window.location.href.match(/store\.steampowered\.com\/app\/(\d+)/);
-    if (!urlMatch) {
-      console.log(EXT_NAME, '❌ No AppID found in URL:', window.location.href);
-      return;
-    }
+    if (!urlMatch) return LOG('❌ No AppID in URL');
     const appId = urlMatch[1];
-    console.log(EXT_NAME, '✓ AppID extracted:', appId);
 
-    // 2. Find the container AND the Community Hub button specifically
+    // 2. Find container
     const container = document.querySelector('.apphub_OtherSiteInfo');
-    if (!container) {
-      console.log(EXT_NAME, '❌ Container .apphub_OtherSiteInfo not found');
-      console.log(EXT_NAME, '🔍 Available body children:', Array.from(document.body.children).map(el => el.className || el.tagName).slice(0, 20));
-      return;
-    }
-    console.log(EXT_NAME, '✓ Container found:', container);
+    if (!container) return LOG('❌ Container .apphub_OtherSiteInfo not found');
+    if (document.getElementById('sge-create-guide-btn')) return LOG('⚠️ Button already injected');
 
-    const communityHubBtn = container.querySelector('a[href*="/app/"][href*="/home"]');
-    if (!communityHubBtn) {
-      console.log(EXT_NAME, '❌ Community Hub button not found inside container');
-      console.log(EXT_NAME, '🔍 Container inner HTML (first 500 chars):', container.innerHTML.substring(0, 500));
-      console.log(EXT_NAME, '🔍 All links in container:', Array.from(container.querySelectorAll('a')).map(a => ({ href: a.href, text: a.textContent.trim(), className: a.className })));
-      return;
-    }
-    console.log(EXT_NAME, '✓ Community Hub button found:', communityHubBtn);
-
-    // 3. Prevent duplicate injection
-    if (document.getElementById('sge-create-guide-btn')) {
-      console.log(EXT_NAME, '⚠️ Button already injected, skipping');
-      return;
+    // 3. Find Community Hub button (robust 2-step fallback)
+    let targetBtn = container.querySelector('a'); // Usually the only link in this container
+    if (!targetBtn || !targetBtn.textContent.includes('Community Hub')) {
+      // Fallback: explicitly search by visible text
+      const links = Array.from(container.querySelectorAll('a'));
+      targetBtn = links.find(a => a.textContent.trim().includes('Community Hub'));
     }
 
-    // 4. Create native-styled button
+    if (!targetBtn) {
+      LOG('❌ Community Hub button not found. Container HTML:', container.innerHTML.trim());
+      return;
+    }
+    LOG('✓ Target found:', targetBtn.textContent.trim());
+
+    // 4. Create "Create Guide" button
     const btn = document.createElement('a');
     btn.href = `https://steamcommunity.com/sharedfiles/editguide/?appid=${appId}`;
     btn.className = 'btnv6_blue_hoverfade btn_medium';
     btn.id = 'sge-create-guide-btn';
-    btn.style.marginRight = '8px';
+    btn.style.marginRight = '8px'; // Keep spacing consistent
     btn.innerHTML = '<span>Create Guide</span>';
-    console.log(EXT_NAME, '✓ Button element created');
 
-    // 5. Insert BEFORE Community Hub button
+    // 5. Insert BEFORE Community Hub
     try {
-      container.insertBefore(btn, communityHubBtn);
-      console.log(EXT_NAME, '✅ Button successfully injected before Community Hub');
+      container.insertBefore(btn, targetBtn);
+      LOG('✅ Successfully injected before Community Hub');
     } catch (err) {
-      console.log(EXT_NAME, '❌ Error inserting button:', err);
+      LOG('❌ Insertion failed:', err.message);
     }
   }
 
-  // Steam loads elements dynamically → use MutationObserver
-  console.log(EXT_NAME, 'Setting up MutationObserver for store page injection...');
-  const storeObserver = new MutationObserver((mutations, obs) => {
-    console.log(EXT_NAME, 'MutationObserver triggered, checking for container...');
+  // Steam loads elements dynamically → observe DOM
+  const observer = new MutationObserver((mutations, obs) => {
     if (document.querySelector('.apphub_OtherSiteInfo')) {
-      console.log(EXT_NAME, 'Container detected, attempting injection...');
       injectStoreGuideButton();
-      console.log(EXT_NAME, 'Disconnecting observer after successful detection');
       obs.disconnect();
     }
   });
 
-  // Start observing immediately
-  storeObserver.observe(document.body, { childList: true, subtree: true });
-  console.log(EXT_NAME, 'MutationObserver started');
+  observer.observe(document.body, { childList: true, subtree: true });
+  setTimeout(injectStoreGuideButton, 1200); // Fallback if already loaded
 
-  // Fallback in case DOM is already ready before observer attaches
-  console.log(EXT_NAME, 'Setting 1500ms fallback timeout');
-  setTimeout(() => {
-    console.log(EXT_NAME, 'Fallback timeout triggered');
-    injectStoreGuideButton();
-  }, 1500);
-
-  // =====================================================
-  // GUIDE EDITOR: Placeholder for Phase 2 (Char Counter)
-  // =====================================================
-  console.log(EXT_NAME, 'Content script initialized. Ready for guide editor hooks.');
+  LOG('Content script initialized. Watching for store page elements...');
 })();
