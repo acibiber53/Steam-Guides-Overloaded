@@ -15,6 +15,7 @@
     "js": [
       "src/feature/navigation/store-button.js",
       "src/feature/editor/guide-helpers.js",
+      "src/feature/editor/template-system.js",
       "src/content.js"
     ],
     "css": ["src/content.css"],
