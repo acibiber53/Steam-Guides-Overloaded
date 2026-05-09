@@ -6,9 +6,9 @@
   function getRoute() {
     const url = window.location.href;
     if (/store\.steampowered\.com\/app\//.test(url)) return 'store';
+    if (/steamcommunity\.com\/sharedfiles\/editguidesubsection/.test(url)) return 'editguidesubsection';
     if (/steamcommunity\.com\/sharedfiles\/editguide/.test(url)) return 'editguide';
     if (/steamcommunity\.com\/sharedfiles\/manageguide/.test(url)) return 'manageguide';
-    if (/steamcommunity\.com\/sharedfiles\/editguidesubsection/.test(url)) return 'editguidesubsection';
     return 'unknown';
   }
 
