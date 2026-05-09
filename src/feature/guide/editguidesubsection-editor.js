@@ -24,6 +24,7 @@
 
     const helper = document.createElement('div');
     helper.className = 'sgo-field-helper';
+    helper.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
     helper.innerHTML = config.html || '';
 
     if (field.parentNode) {
@@ -31,15 +32,20 @@
     }
 
     if (config.onMount) config.onMount(field, helper);
+    
+    LOG(`✅ Helper injected for ${selector}`);
   }
 
   // 📊 Character Counter with Thresholds
   function createCounter(maxLen, warningPct = 0.75, criticalPct = 0.9) {
     return (field, helper) => {
+      LOG(`🔢 Creating counter for ${maxLen} chars`);
       const countEl = document.createElement('span');
       countEl.className = 'sgo-counter';
+      countEl.style.cssText = 'display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: #c7d5e0;';
       countEl.textContent = `0/${maxLen}`;
       helper.appendChild(countEl);
+      LOG(`✅ Counter element created: ${countEl.textContent}`);
 
       const update = () => {
         const len = field.value.length;
@@ -118,19 +124,35 @@
     if (!form) return false;
 
     // Section Title Counter
-    injectHelper('#sectiontitle, input[name="sectiontitle"]', {
-      html: '<span class="sgo-helper-label">Section Title</span>',
-      onMount: createCounter(128)
-    });
+    const titleSelector = '#sectiontitle, input[name="sectiontitle"]';
+    const titleField = document.querySelector(titleSelector);
+    LOG(`🔍 Looking for title field: ${titleSelector}`);
+    if (titleField) {
+      LOG(`✅ Found title field: ${titleField.tagName}`);
+      injectHelper(titleSelector, {
+        html: '<span class="sgo-helper-label">Section Title</span>',
+        onMount: createCounter(128)
+      });
+    } else {
+      LOG(`❌ Title field not found`);
+    }
 
     // Section Body Counter + BBCode Toolbar + Templates
-    injectHelper('#sectiontext, textarea[name="sectiontext"], #description', {
-      html: '<span class="sgo-helper-label">Section Content</span>',
-      onMount: (field, helper) => {
-        createCounter(8000)(field, helper);
-        createToolbar()(field, helper);
-      }
-    });
+    const bodySelector = '#sectiontext, textarea[name="sectiontext"], #description';
+    const bodyField = document.querySelector(bodySelector);
+    LOG(`🔍 Looking for body field: ${bodySelector}`);
+    if (bodyField) {
+      LOG(`✅ Found body field: ${bodyField.tagName}`);
+      injectHelper(bodySelector, {
+        html: '<span class="sgo-helper-label">Section Content</span>',
+        onMount: (field, helper) => {
+          createCounter(8000)(field, helper);
+          createToolbar()(field, helper);
+        }
+      });
+    } else {
+      LOG(`❌ Body field not found`);
+    }
 
     LOG('✅ EditSubsection helpers active');
     return true;
