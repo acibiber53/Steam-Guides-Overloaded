@@ -90,6 +90,16 @@
   font-family: "Motiva Sans", Arial, sans-serif;
 }
 
+/* When panel is closed, wrapper should not block clicks */
+.sgo-sidepanel-wrapper:not(:has(.sgo-sidepanel.open)) {
+  pointer-events: none;
+}
+
+/* When panel is open, wrapper allows pointer events */
+.sgo-sidepanel-wrapper:has(.sgo-sidepanel.open) {
+  pointer-events: auto;
+}
+
 /* Collapsed Toggle Button */
 .sgo-sidepanel-toggle {
   position: absolute;
@@ -106,6 +116,7 @@
   gap: 8px;
   transition: all 0.2s ease;
   box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
 }
 
 .sgo-sidepanel-toggle:hover {
@@ -119,6 +130,7 @@
 
 .toggle-icon {
   font-size: 16px;
+  pointer-events: auto;
 }
 
 .toggle-text {
@@ -126,6 +138,7 @@
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
+  pointer-events: auto;
 }
 
 /* Sidepanel */
@@ -142,12 +155,14 @@
   visibility: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
 }
 
 .sgo-sidepanel.open {
   transform: translateX(0);
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .sgo-sp-header {
@@ -158,16 +173,19 @@
   background: rgba(42, 71, 94, 0.5);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px 0 0 0;
+  pointer-events: auto;
 }
 
 .sgo-sp-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  pointer-events: auto;
 }
 
 .sgo-sp-title .title-icon {
   font-size: 16px;
+  pointer-events: auto;
 }
 
 .sgo-sp-title h4 {
@@ -175,9 +193,10 @@
   color: #66c0f4;
   font-size: 13px;
   font-weight: 600;
+  pointer-events: auto;
 }
 
-sgo-sp-close {
+.sgo-sp-close {
   background: transparent;
   border: none;
   color: #8f98a0;
@@ -186,6 +205,7 @@ sgo-sp-close {
   padding: 2px 6px;
   border-radius: 3px;
   transition: all 0.15s;
+  pointer-events: auto;
 }
 
 .sgo-sp-close:hover {
@@ -198,6 +218,7 @@ sgo-sp-close {
   flex-direction: column;
   overflow: hidden;
   flex: 1;
+  pointer-events: auto;
 }
 
 .sgo-sp-actions {
@@ -205,6 +226,7 @@ sgo-sp-close {
   gap: 6px;
   padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  pointer-events: auto;
 }
 
 .sgo-sp-btn {
@@ -218,6 +240,7 @@ sgo-sp-close {
   font-size: 10px;
   font-weight: 500;
   transition: all 0.15s;
+  pointer-events: auto;
 }
 
 .sgo-sp-btn:hover {
@@ -229,6 +252,7 @@ sgo-sp-close {
 .sgo-sp-search {
   padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  pointer-events: auto;
 }
 
 .sgo-sp-search input {
@@ -242,6 +266,7 @@ sgo-sp-close {
   font-size: 11px;
   outline: none;
   transition: border-color 0.15s;
+  pointer-events: auto;
 }
 
 .sgo-sp-search input:focus {
@@ -258,6 +283,7 @@ sgo-sp-close {
   padding: 8px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   overflow-x: auto;
+  pointer-events: auto;
 }
 
 .sgo-sp-categories::-webkit-scrollbar {
@@ -279,6 +305,7 @@ sgo-sp-close {
   font-size: 13px;
   transition: all 0.15s;
   white-space: nowrap;
+  pointer-events: auto;
 }
 
 .sgo-sp-cat:hover {
@@ -299,6 +326,7 @@ sgo-sp-close {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  pointer-events: auto;
 }
 
 .sgo-sp-list::-webkit-scrollbar {
@@ -322,6 +350,7 @@ sgo-sp-close {
   padding: 10px;
   cursor: pointer;
   transition: all 0.15s;
+  pointer-events: auto;
 }
 
 .sgo-sp-item:hover {
@@ -339,11 +368,13 @@ sgo-sp-close {
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
+  pointer-events: auto;
 }
 
 .sgo-sp-item-icon {
   font-size: 14px;
   flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .sgo-sp-item-info {
@@ -352,6 +383,7 @@ sgo-sp-close {
   align-items: center;
   gap: 6px;
   min-width: 0;
+  pointer-events: auto;
 }
 
 .sgo-sp-item-name {
@@ -361,6 +393,7 @@ sgo-sp-close {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  pointer-events: auto;
 }
 
 .sgo-sp-badge {
@@ -371,6 +404,7 @@ sgo-sp-close {
   border-radius: 2px;
   font-weight: 600;
   flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .sgo-sp-item-desc {
@@ -382,11 +416,13 @@ sgo-sp-close {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  pointer-events: auto;
 }
 
 .sgo-sp-item-actions {
   display: flex;
   gap: 4px;
+  pointer-events: auto;
 }
 
 .sgo-sp-use,
@@ -401,6 +437,7 @@ sgo-sp-close {
   font-size: 9px;
   font-weight: 500;
   transition: all 0.15s;
+  pointer-events: auto;
 }
 
 .sgo-sp-use:hover {
@@ -418,6 +455,7 @@ sgo-sp-close {
   font-size: 11px;
   text-align: center;
   padding: 30px 10px;
+  pointer-events: auto;
 }
 
 /* Template Preview Modal */
