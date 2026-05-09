@@ -3,18 +3,6 @@
   'use strict';
   const LOG = msg => console.log('[SGO:EditSubsection]', msg);
 
-  // 📦 Template Library for Subsections
-  const SUBSECTION_TEMPLATES = {
-    'step-list': `[b]Step 1:[/b] Description of first step.
-[b]Step 2:[/b] Description of second step.`,
-    'tips-box': `[h3]💡 Tips[/h3]
-[list]
-[*]Helpful tip here
-[*]Another useful hint
-[/list]`,
-    'warning-box': `[h3]⚠️ Warning[/h3]
-[spoiler]Important warning or spoiler content here.[/spoiler]`
-  };
 
   // 🔧 Safe DOM Injection
   function injectHelper(selector, config) {
@@ -101,27 +89,55 @@
     };
   }
 
-  // 🛠️ Template Dropdown (BBCode Toolbar provided by Steam)
+  // 🛠️ Template Dropdown using template-system.js
   function createTemplateDropdown() {
-    return (field, helper) => {
+    return async (field, helper) => {
       const toolbar = document.createElement('div');
       toolbar.className = 'sgo-template-dropdown';
+      
+      // Create initial dropdown with loading state
       toolbar.innerHTML = `
         <select class="sgo-template-select">
           <option value="">📋 Insert Template...</option>
-          ${Object.keys(SUBSECTION_TEMPLATES).map(k => `<option value="${k}">${k.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>`).join('')}
+          <option value="" disabled>Loading templates...</option>
         </select>
       `;
 
       helper.appendChild(toolbar);
 
       const select = toolbar.querySelector('.sgo-template-select');
+      
+      // Load templates from template-system.js
+      try {
+        const allTemplates = await window.SGO.Templates.getAll();
+        
+        // Populate dropdown with templates
+        select.innerHTML = '<option value="">📋 Insert Template...</option>';
+        
+        Object.keys(allTemplates).forEach(key => {
+          const template = allTemplates[key];
+          const option = document.createElement('option');
+          option.value = key;
+          option.textContent = `${template.name}${template.isCustom ? ' (Custom)' : ''}`;
+          select.appendChild(option);
+        });
+        
+        LOG(`✅ Loaded ${Object.keys(allTemplates).length} templates into dropdown`);
+      } catch (e) {
+        LOG('❌ Error loading templates:', e);
+        select.innerHTML = '<option value="">📋 Insert Template...</option><option value="" disabled>Error loading templates</option>';
+      }
+
       select.addEventListener('change', () => {
-        const template = select.value;
-        if (template && SUBSECTION_TEMPLATES[template]) {
-          insertAtCursor(field, SUBSECTION_TEMPLATES[template]);
-          field.focus();
-          select.value = ''; // Reset after use
+        const templateKey = select.value;
+        if (templateKey) {
+          window.SGO.Templates.getAll().then(templates => {
+            if (templates[templateKey]) {
+              insertAtCursor(field, templates[templateKey].content);
+              field.focus();
+              select.value = ''; // Reset after use
+            }
+          });
         }
       });
     };
