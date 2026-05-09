@@ -32,8 +32,8 @@
     LOG(`📍 Found field: ${field.tagName}#${field.id || field.name || 'unnamed'}`);
 
     const helper = document.createElement('div');
-    helper.className = 'sgo-field-helper';
-    helper.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; background: rgba(255,0,0,0.1); border: 1px solid red;';
+    helper.className = 'sgo-field-helper sgo-counter-ok'; // Default to green
+    helper.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; background: rgba(40,167,69,0.1); border: 1px solid #28a745;';
     helper.innerHTML = config.html || '';
     LOG(`🔨 Created helper element with content: ${config.html}`);
 
@@ -57,7 +57,7 @@
     return (field, helper) => {
       LOG(`🔢 Creating counter for ${maxLen} chars`);
       const countEl = document.createElement('span');
-      countEl.className = 'sgo-counter';
+      countEl.className = 'sgo-counter sgo-counter-ok';
       countEl.style.cssText = 'display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: #fff; background: #28a745; padding: 2px 5px; font-weight: bold; border-radius: 3px; margin-left: 8px;';
       countEl.textContent = `0/${maxLen}`;
       helper.appendChild(countEl);
@@ -68,15 +68,30 @@
         countEl.textContent = `${len}/${maxLen}`;
         const pct = len / maxLen;
         
-        // Update counter color based on percentage
+        // Determine status class and colors based on percentage
+        let statusClass = 'sgo-counter-ok';
+        let bgColor = '#28a745'; // Green
+        let textColor = '#fff';
+        
         if (pct >= criticalPct) {
-          countEl.style.background = '#dc3545'; // Red for critical (>90%)
+          statusClass = 'sgo-counter-critical';
+          bgColor = '#dc3545'; // Red for critical (>90%)
         } else if (pct >= warningPct) {
-          countEl.style.background = '#ffc107'; // Yellow for warning (75-90%)
-          countEl.style.color = '#000'; // Black text for better contrast on yellow
-        } else {
-          countEl.style.background = '#28a745'; // Green for normal (<75%)
-          countEl.style.color = '#fff'; // White text for green/red backgrounds
+          statusClass = 'sgo-counter-warning';
+          bgColor = '#ffc107'; // Yellow for warning (75-90%)
+          textColor = '#000'; // Black text for better contrast on yellow
+        }
+        
+        // Update counter styles
+        countEl.style.background = bgColor;
+        countEl.style.color = textColor;
+        countEl.className = `sgo-counter ${statusClass}`;
+        
+        // Update helper container styles to match
+        if (helper) {
+          helper.className = `sgo-field-helper ${statusClass}`;
+          helper.style.background = `rgba(${pct >= criticalPct ? '220,53,69' : pct >= warningPct ? '255,193,7' : '40,167,69'},0.1)`;
+          helper.style.borderColor = bgColor;
         }
       };
 
