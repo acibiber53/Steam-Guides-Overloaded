@@ -101,19 +101,12 @@
     };
   }
 
-  // 🛠️ BBCode Toolbar & Template Dropdown
-  function createToolbar() {
+  // 🛠️ Template Dropdown (BBCode Toolbar provided by Steam)
+  function createTemplateDropdown() {
     return (field, helper) => {
       const toolbar = document.createElement('div');
-      toolbar.className = 'sgo-bbcode-toolbar';
+      toolbar.className = 'sgo-template-dropdown';
       toolbar.innerHTML = `
-        <button data-tag="b" title="Bold">B</button>
-        <button data-tag="i" title="Italic">I</button>
-        <button data-tag="u" title="Underline">U</button>
-        <button data-tag="strike" title="Strikethrough">S</button>
-        <button data-tag="url" title="Link">🔗</button>
-        <button data-tag="table" title="Table">▦</button>
-        <button data-tag="spoiler" title="Spoiler">👁️</button>
         <select class="sgo-template-select">
           <option value="">📋 Insert Template...</option>
           ${Object.keys(SUBSECTION_TEMPLATES).map(k => `<option value="${k}">${k.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>`).join('')}
@@ -121,13 +114,6 @@
       `;
 
       helper.appendChild(toolbar);
-
-      toolbar.addEventListener('click', (e) => {
-        if (e.target.tagName === 'BUTTON' && e.target.dataset.tag) {
-          wrapSelection(field, e.target.dataset.tag);
-          field.focus();
-        }
-      });
 
       const select = toolbar.querySelector('.sgo-template-select');
       select.addEventListener('change', () => {
@@ -139,15 +125,6 @@
         }
       });
     };
-  }
-
-  function wrapSelection(textarea, tag) {
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = textarea.value.substring(start, end);
-    const wrapped = `[${tag}]${selected}[/${tag}]`;
-    textarea.value = textarea.value.substring(0, start) + wrapped + textarea.value.substring(end);
-    textarea.setSelectionRange(start + tag.length + 2, start + tag.length + 2 + selected.length);
   }
 
   function insertAtCursor(textarea, text) {
@@ -178,7 +155,7 @@
       LOG(`❌ Title field not found`);
     }
 
-    // Section Body Counter + BBCode Toolbar + Templates
+    // Section Body Counter + Template Dropdown (BBCode Toolbar provided by Steam)
     const bodySelector = '#description, textarea[name="description"], .editGuideSubSectionDescField';
     const bodyField = document.querySelector(bodySelector);
     if (bodyField) {
@@ -186,9 +163,9 @@
       injectHelper(bodySelector, {
         html: '<span class="sgo-helper-label">Section Content</span>',
         onMount: (field, helper) => {
-          LOG(`🎯 Mounting body helpers (counter + toolbar)`);
+          LOG(`🎯 Mounting body helpers (counter + template dropdown)`);
           createCounter(8000)(field, helper);
-          createToolbar()(field, helper);
+          createTemplateDropdown()(field, helper);
         }
       });
     } else {
