@@ -338,6 +338,10 @@
   transition: all 0.15s;
   white-space: nowrap;
   pointer-events: auto;
+  height: 26px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
 }
 
 .sgo-sp-cat:hover {
