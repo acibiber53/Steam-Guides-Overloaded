@@ -137,20 +137,15 @@
   function setupEditSubsection() {
     LOG('🔍 Initializing editguidesubsection helpers (Section Content Editor)...');
     
-    const form = document.querySelector('#SubmitGuideForm, .subsection_form');
-    LOG(`🔍 Looking for form: #SubmitGuideForm, .subsection_form`);
-    if (!form) {
-      LOG(`❌ Form not found`);
-      return false;
-    }
-    LOG(`✅ Found form: ${form.tagName}#${form.id || 'unnamed'}`);
+    // No need to find form first - just look for the fields directly
+    LOG(`🔍 Looking for title field: #title, input[name="title"], .editGuideSubSectionTitleField`);
+    LOG(`🔍 Looking for content field: #description, textarea[name="description"], .editGuideSubSectionDescField`);
 
     // Section Title Counter
-    const titleSelector = '#sectiontitle, input[name="sectiontitle"]';
+    const titleSelector = '#title, input[name="title"], .editGuideSubSectionTitleField';
     const titleField = document.querySelector(titleSelector);
-    LOG(`🔍 Looking for title field: ${titleSelector}`);
     if (titleField) {
-      LOG(`✅ Found title field: ${titleField.tagName}`);
+      LOG(`✅ Found title field: ${titleField.tagName}#${titleField.id || titleField.name || 'unnamed'}`);
       injectHelper(titleSelector, {
         html: '<span class="sgo-helper-label">Section Title</span>',
         onMount: createCounter(128)
@@ -160,11 +155,10 @@
     }
 
     // Section Body Counter + BBCode Toolbar + Templates
-    const bodySelector = '#sectiontext, textarea[name="sectiontext"], #description';
+    const bodySelector = '#description, textarea[name="description"], .editGuideSubSectionDescField';
     const bodyField = document.querySelector(bodySelector);
-    LOG(`🔍 Looking for body field: ${bodySelector}`);
     if (bodyField) {
-      LOG(`✅ Found body field: ${bodyField.tagName}`);
+      LOG(`✅ Found body field: ${bodyField.tagName}#${bodyField.id || bodyField.name || 'unnamed'}`);
       injectHelper(bodySelector, {
         html: '<span class="sgo-helper-label">Section Content</span>',
         onMount: (field, helper) => {
