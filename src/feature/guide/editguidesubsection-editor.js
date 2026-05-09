@@ -58,7 +58,7 @@
       LOG(`🔢 Creating counter for ${maxLen} chars`);
       const countEl = document.createElement('span');
       countEl.className = 'sgo-counter';
-      countEl.style.cssText = 'display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: #fff; background: blue; padding: 2px 5px; font-weight: bold;';
+      countEl.style.cssText = 'display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: #fff; background: #28a745; padding: 2px 5px; font-weight: bold; border-radius: 3px; margin-left: 8px;';
       countEl.textContent = `0/${maxLen}`;
       helper.appendChild(countEl);
       LOG(`✅ Counter element created: ${countEl.textContent}`);
@@ -67,8 +67,17 @@
         const len = field.value.length;
         countEl.textContent = `${len}/${maxLen}`;
         const pct = len / maxLen;
-        helper.classList.toggle('sgo-warning', pct >= warningPct && pct < criticalPct);
-        helper.classList.toggle('sgo-critical', pct >= criticalPct);
+        
+        // Update counter color based on percentage
+        if (pct >= criticalPct) {
+          countEl.style.background = '#dc3545'; // Red for critical (>90%)
+        } else if (pct >= warningPct) {
+          countEl.style.background = '#ffc107'; // Yellow for warning (75-90%)
+          countEl.style.color = '#000'; // Black text for better contrast on yellow
+        } else {
+          countEl.style.background = '#28a745'; // Green for normal (<75%)
+          countEl.style.color = '#fff'; // White text for green/red backgrounds
+        }
       };
 
       field.addEventListener('input', update);
