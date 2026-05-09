@@ -89,57 +89,42 @@
     };
   }
 
-  // 🛠️ Template Dropdown using template-system.js
-  function createTemplateDropdown() {
-    return async (field, helper) => {
+  // 🛠️ Template Button to Open Sidepanel
+  function createTemplateButton() {
+    return (field, helper) => {
       const toolbar = document.createElement('div');
-      toolbar.className = 'sgo-template-dropdown';
+      toolbar.className = 'sgo-template-button';
       
-      // Create initial dropdown with loading state
+      // Create button to open template sidepanel
       toolbar.innerHTML = `
-        <select class="sgo-template-select">
-          <option value="">📋 Insert Template...</option>
-          <option value="" disabled>Loading templates...</option>
-        </select>
+        <button type="button" class="sgo-open-templates" title="Open Template Library">
+          📋 Templates
+        </button>
       `;
 
       helper.appendChild(toolbar);
 
-      const select = toolbar.querySelector('.sgo-template-select');
+      const button = toolbar.querySelector('.sgo-open-templates');
       
-      // Load templates from template-system.js
-      try {
-        const allTemplates = await window.SGO.Templates.getAll();
+      button.addEventListener('click', () => {
+        // Find and open the template sidepanel
+        const panel = document.querySelector('#sgo-template-sidepanel');
+        const toggle = document.querySelector('#sgo-template-toggle');
         
-        // Populate dropdown with templates
-        select.innerHTML = '<option value="">📋 Insert Template...</option>';
-        
-        Object.keys(allTemplates).forEach(key => {
-          const template = allTemplates[key];
-          const option = document.createElement('option');
-          option.value = key;
-          option.textContent = `${template.name}${template.isCustom ? ' (Custom)' : ''}`;
-          select.appendChild(option);
-        });
-        
-        LOG(`✅ Loaded ${Object.keys(allTemplates).length} templates into dropdown`);
-      } catch (e) {
-        LOG('❌ Error loading templates:', e);
-        select.innerHTML = '<option value="">📋 Insert Template...</option><option value="" disabled>Error loading templates</option>';
-      }
-
-      select.addEventListener('change', () => {
-        const templateKey = select.value;
-        if (templateKey) {
-          window.SGO.Templates.getAll().then(templates => {
-            if (templates[templateKey]) {
-              insertAtCursor(field, templates[templateKey].content);
-              field.focus();
-              select.value = ''; // Reset after use
-            }
-          });
+        if (panel && toggle) {
+          panel.classList.add('open');
+          toggle.classList.add('active');
+          LOG('✅ Template sidepanel opened via button');
+        } else {
+          LOG('⚠️ Template sidepanel not found - it may not be initialized yet');
+          // Optionally trigger initialization if needed
+          if (window.SGO && window.SGO.initTemplateSidepanel) {
+            window.SGO.initTemplateSidepanel();
+          }
         }
       });
+      
+      LOG('✅ Template button created');
     };
   }
 
@@ -171,7 +156,7 @@
       LOG(`❌ Title field not found`);
     }
 
-    // Section Body Counter + Template Dropdown (BBCode Toolbar provided by Steam)
+    // Section Body Counter + Template Button (BBCode Toolbar provided by Steam)
     const bodySelector = '#description, textarea[name="description"], .editGuideSubSectionDescField';
     const bodyField = document.querySelector(bodySelector);
     if (bodyField) {
@@ -179,9 +164,9 @@
       injectHelper(bodySelector, {
         html: '<span class="sgo-helper-label">Section Content</span>',
         onMount: (field, helper) => {
-          LOG(`🎯 Mounting body helpers (counter + template dropdown)`);
+          LOG(`🎯 Mounting body helpers (counter + template button)`);
           createCounter(8000)(field, helper);
-          createTemplateDropdown()(field, helper);
+          createTemplateButton()(field, helper);
         }
       });
     } else {
