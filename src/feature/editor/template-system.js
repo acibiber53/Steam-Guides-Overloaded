@@ -391,6 +391,76 @@ Link to interactive maps or screenshots showing locations
 
   // Storage key for custom templates
   const STORAGE_KEY = 'sgo_custom_templates';
+  const CATEGORIES_KEY = 'sgo_custom_categories';
+
+  // Default categories
+  const DEFAULT_CATEGORIES = {
+    'achievements': { name: 'Achievements', icon: '🏆' },
+    'walkthrough': { name: 'Walkthrough', icon: '📖' },
+    'formatting': { name: 'Formatting', icon: '✨' },
+    'specialized': { name: 'Specialized', icon: '🎯' }
+  };
+
+  // Get all categories (defaults + custom)
+  function getAllCategories() {
+    try {
+      const stored = localStorage.getItem(CATEGORIES_KEY);
+      const custom = stored ? JSON.parse(stored) : {};
+      return { ...DEFAULT_CATEGORIES, ...custom };
+    } catch (e) {
+      console.error('[SGO:Template] Error loading categories:', e);
+      return DEFAULT_CATEGORIES;
+    }
+  }
+
+  // Save a custom category
+  function saveCustomCategory(key, category) {
+    try {
+      const stored = localStorage.getItem(CATEGORIES_KEY);
+      const custom = stored ? JSON.parse(stored) : {};
+      custom[key] = category;
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(custom));
+      console.log('[SGO:Template] Saved custom category:', key);
+      return true;
+    } catch (e) {
+      console.error('[SGO:Template] Error saving category:', e);
+      return false;
+    }
+  }
+
+  // Delete a custom category
+  function deleteCustomCategory(key) {
+    if (DEFAULT_CATEGORIES[key]) {
+      console.warn('[SGO:Template] Cannot delete default category:', key);
+      return false;
+    }
+    try {
+      const stored = localStorage.getItem(CATEGORIES_KEY);
+      if (!stored) return false;
+      const custom = JSON.parse(stored);
+      delete custom[key];
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(custom));
+      console.log('[SGO:Template] Deleted custom category:', key);
+      return true;
+    } catch (e) {
+      console.error('[SGO:Template] Error deleting category:', e);
+      return false;
+    }
+  }
+
+  // Generate unique template ID
+  function generateTemplateId(name) {
+    const base = name.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+    
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 5);
+    
+    return `${base}-${timestamp}-${random}`;
+  }
 
   // Get all templates (defaults + custom)
   function getAllTemplates() {
@@ -577,18 +647,13 @@ Link to interactive maps or screenshots showing locations
             <button class="sgo-sp-btn" id="sgo-sp-new" title="Create new template">➕ New</button>
             <button class="sgo-sp-btn" id="sgo-sp-export" title="Export all templates">⬇ Export</button>
             <button class="sgo-sp-btn" id="sgo-sp-import" title="Import templates">⬆ Import</button>
+            <button class="sgo-sp-btn" id="sgo-sp-categories-btn" title="Manage categories">📁 Categories</button>
             <input type="file" id="sgo-sp-import-file" accept=".json" style="display:none">
           </div>
           <div class="sgo-sp-search">
             <input type="text" id="sgo-sp-search" placeholder="Search templates..." autocomplete="off">
           </div>
-          <div class="sgo-sp-categories">
-            <button class="sgo-sp-cat active" data-cat="all">All</button>
-            <button class="sgo-sp-cat" data-cat="achievements">🏆</button>
-            <button class="sgo-sp-cat" data-cat="walkthrough">📖</button>
-            <button class="sgo-sp-cat" data-cat="formatting">✨</button>
-            <button class="sgo-sp-cat" data-cat="specialized">🎯</button>
-          </div>
+          <div class="sgo-sp-categories" id="sgo-sp-categories-container"></div>
           <div class="sgo-sp-list"></div>
         </div>
       </div>
@@ -755,15 +820,16 @@ Link to interactive maps or screenshots showing locations
       });
       
       // Initial render
+      renderCategoryButtons(sidepanel);
       renderTemplateList(sidepanel);
       
-      // Category filter buttons
-      sidepanel.querySelectorAll('.sgo-sp-cat').forEach(btn => {
-        btn.addEventListener('click', () => {
+      // Category filter buttons (delegated event for dynamic content)
+      sidepanel.querySelector('#sgo-sp-categories-container').addEventListener('click', (e) => {
+        if (e.target.classList.contains('sgo-sp-cat')) {
           sidepanel.querySelectorAll('.sgo-sp-cat').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          renderTemplateList(sidepanel, btn.dataset.cat);
-        });
+          e.target.classList.add('active');
+          renderTemplateList(sidepanel, e.target.dataset.cat);
+        }
       });
 
       // Search functionality
@@ -772,7 +838,7 @@ Link to interactive maps or screenshots showing locations
       searchInput.addEventListener('input', () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-          const activeCat = sidepanel.querySelector('.sgo-sp-cat.active').dataset.cat;
+          const activeCat = sidepanel.querySelector('.sgo-sp-cat.active')?.dataset.cat || 'all';
           renderTemplateList(sidepanel, activeCat, searchInput.value.trim());
         }, 300);
       });
@@ -804,16 +870,152 @@ Link to interactive maps or screenshots showing locations
         showCreateTemplateModal(sidepanel);
       });
 
+      // Categories management button
+      document.querySelector('#sgo-sp-categories-btn').addEventListener('click', () => {
+        showCategoryManagerModal();
+      });
+
       LOG('✅ Template Sidepanel initialized');
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  // Show create/edit template modal
+  // Render category buttons dynamically
+  async function renderCategoryButtons(container, activeCat = 'all') {
+    const categories = getAllCategories();
+    const catContainer = container.querySelector('#sgo-sp-categories-container');
+    
+    let html = `<button class="sgo-sp-cat ${activeCat === 'all' ? 'active' : ''}" data-cat="all">All</button>`;
+    
+    Object.keys(categories).forEach(key => {
+      const cat = categories[key];
+      html += `<button class="sgo-sp-cat ${activeCat === key ? 'active' : ''}" data-cat="${key}">${cat.icon}</button>`;
+    });
+    
+    catContainer.innerHTML = html;
+  }
+
+  // Show category manager modal
+  function showCategoryManagerModal() {
+    const existing = document.querySelector('.sgo-category-manager-modal');
+    if (existing) existing.remove();
+
+    const categories = getAllCategories();
+    let categoryListHtml = '';
+    
+    Object.keys(categories).forEach(key => {
+      const cat = categories[key];
+      const isDefault = DEFAULT_CATEGORIES[key];
+      categoryListHtml += `
+        <div class="sgo-cat-manager-item ${isDefault ? 'default' : 'custom'}" data-key="${key}">
+          <span class="sgo-cat-icon">${cat.icon}</span>
+          <span class="sgo-cat-name">${cat.name}</span>
+          <span class="sgo-cat-key">${key}</span>
+          ${!isDefault ? `
+            <button class="sgo-cat-delete" data-key="${key}" title="Delete category">🗑️</button>
+          ` : '<span class="sgo-cat-default-badge">Default</span>'}
+        </div>
+      `;
+    });
+
+    const modal = document.createElement('div');
+    modal.className = 'sgo-category-manager-modal';
+    modal.innerHTML = `
+      <div class="sgo-sp-modal-content">
+        <div class="sgo-sp-modal-header">
+          <h4>Manage Categories</h4>
+          <button class="sgo-sp-modal-close">✕</button>
+        </div>
+        <div class="sgo-sp-modal-body">
+          <div class="sgo-form-group">
+            <label>Add New Category</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="sgo-cat-key" placeholder="category-key" style="flex: 1;">
+              <input type="text" id="sgo-cat-name" placeholder="Category Name" style="flex: 2;">
+              <input type="text" id="sgo-cat-icon" placeholder="📁" style="width: 60px;">
+              <button class="sgo-sp-modal-save" id="sgo-cat-add">Add</button>
+            </div>
+          </div>
+          <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0;">
+          <label>Existing Categories</label>
+          <div class="sgo-cat-list">
+            ${categoryListHtml}
+          </div>
+        </div>
+        <div class="sgo-sp-modal-footer">
+          <button class="sgo-sp-modal-cancel">Close</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector('.sgo-sp-modal-close').addEventListener('click', () => modal.remove());
+    modal.querySelector('.sgo-sp-modal-cancel').addEventListener('click', () => modal.remove());
+    
+    // Add new category
+    modal.querySelector('#sgo-cat-add').addEventListener('click', () => {
+      const key = modal.querySelector('#sgo-cat-key').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      const name = modal.querySelector('#sgo-cat-name').value.trim();
+      const icon = modal.querySelector('#sgo-cat-icon').value.trim() || '📁';
+      
+      if (!key || !name) {
+        alert('Please fill in both Key and Name fields');
+        return;
+      }
+      
+      if (DEFAULT_CATEGORIES[key]) {
+        alert('Cannot create a category with a default category key');
+        return;
+      }
+      
+      saveCustomCategory(key, { name, icon });
+      modal.remove();
+      showCategoryManagerModal();
+      
+      // Refresh category buttons in sidepanel if open
+      const sidepanel = document.querySelector('#sgo-template-sidepanel');
+      if (sidepanel) {
+        const activeCat = sidepanel.querySelector('.sgo-sp-cat.active')?.dataset.cat || 'all';
+        renderCategoryButtons(sidepanel, activeCat);
+      }
+    });
+    
+    // Delete category
+    modal.querySelectorAll('.sgo-cat-delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        if (deleteCustomCategory(key)) {
+          modal.remove();
+          showCategoryManagerModal();
+          
+          // Refresh category buttons in sidepanel if open
+          const sidepanel = document.querySelector('#sgo-template-sidepanel');
+          if (sidepanel) {
+            const activeCat = sidepanel.querySelector('.sgo-sp-cat.active')?.dataset.cat || 'all';
+            renderCategoryButtons(sidepanel, activeCat);
+          }
+        }
+      });
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+  }
+
+    // Show create/edit template modal
   function showCreateTemplateModal(container) {
     const existing = document.querySelector('.sgo-sp-create-modal');
     if (existing) existing.remove();
+
+    const categories = getAllCategories();
+    let categoryOptions = '';
+    Object.keys(categories).forEach(key => {
+      const cat = categories[key];
+      categoryOptions += `<option value="${key}">${cat.icon} ${cat.name}</option>`;
+    });
 
     const modal = document.createElement('div');
     modal.className = 'sgo-sp-create-modal';
@@ -825,10 +1027,6 @@ Link to interactive maps or screenshots showing locations
         </div>
         <div class="sgo-sp-modal-body">
           <div class="sgo-form-group">
-            <label>Template ID (lowercase, hyphens)</label>
-            <input type="text" id="sgo-tpl-id" placeholder="my-custom-template">
-          </div>
-          <div class="sgo-form-group">
             <label>Template Name</label>
             <input type="text" id="sgo-tpl-name" placeholder="My Custom Template">
           </div>
@@ -839,15 +1037,12 @@ Link to interactive maps or screenshots showing locations
           <div class="sgo-form-group">
             <label>Category</label>
             <select id="sgo-tpl-category">
-              <option value="achievements">🏆 Achievements</option>
-              <option value="walkthrough">📖 Walkthrough</option>
-              <option value="formatting" selected>✨ Formatting</option>
-              <option value="specialized">🎯 Specialized</option>
+              ${categoryOptions}
             </select>
           </div>
           <div class="sgo-form-group">
             <label>Content (BBCode)</label>
-            <textarea id="sgo-tpl-content" rows="10" placeholder="[h2]Section[/h2]\nYour content here..."></textarea>
+            <textarea id="sgo-tpl-content" rows="10" placeholder="[h2]Section[/h2]\\nYour content here..."></textarea>
           </div>
         </div>
         <div class="sgo-sp-modal-footer">
@@ -862,21 +1057,18 @@ Link to interactive maps or screenshots showing locations
     modal.querySelector('.sgo-sp-modal-close').addEventListener('click', () => modal.remove());
     modal.querySelector('.sgo-sp-modal-cancel').addEventListener('click', () => modal.remove());
     modal.querySelector('.sgo-sp-modal-save').addEventListener('click', () => {
-      const key = document.querySelector('#sgo-tpl-id').value.trim();
       const name = document.querySelector('#sgo-tpl-name').value.trim();
       const description = document.querySelector('#sgo-tpl-desc').value.trim();
       const category = document.querySelector('#sgo-tpl-category').value;
       const content = document.querySelector('#sgo-tpl-content').value;
 
-      if (!key || !name || !content) {
-        alert('Please fill in all required fields (ID, Name, Content)');
+      if (!name || !content) {
+        alert('Please fill in all required fields (Name, Content)');
         return;
       }
 
-      if (!/^[a-z0-9-]+$/.test(key)) {
-        alert('Template ID must contain only lowercase letters, numbers, and hyphens');
-        return;
-      }
+      // Auto-generate template ID
+      const key = generateTemplateId(name);
 
       saveCustomTemplate(key, { name, description, category, content });
       renderTemplateList(container);

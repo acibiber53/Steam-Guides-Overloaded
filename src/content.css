@@ -747,3 +747,97 @@
 .sgo-sp-modal-save:hover {
   background: #85d0ff;
 }
+/* Category Manager Modal Styles */
+.sgo-category-manager-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002;
+}
+
+.sgo-cat-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.sgo-cat-manager-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(27, 40, 56, 0.5);
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.sgo-cat-manager-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.sgo-cat-manager-item.custom {
+  background: rgba(42, 71, 94, 0.3);
+}
+
+.sgo-cat-icon {
+  font-size: 18px;
+  min-width: 24px;
+}
+
+.sgo-cat-name {
+  flex: 1;
+  font-weight: 500;
+  color: #c7d5e0;
+}
+
+.sgo-cat-key {
+  font-family: monospace;
+  font-size: 12px;
+  color: #66c0f4;
+  background: rgba(42, 71, 94, 0.5);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.sgo-cat-delete {
+  background: rgba(200, 50, 50, 0.3);
+  border: 1px solid rgba(200, 50, 50, 0.5);
+  color: #ff6b6b;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.sgo-cat-delete:hover {
+  background: rgba(200, 50, 50, 0.5);
+  border-color: #ff6b6b;
+}
+
+.sgo-cat-default-badge {
+  font-size: 11px;
+  color: #8f98a0;
+  background: rgba(143, 152, 160, 0.2);
+  padding: 2px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sgo-cat-list label {
+  display: block;
+  margin-bottom: 8px;
+  color: #c7d5e0;
+  font-weight: 500;
+}
