@@ -19,19 +19,35 @@
   // 🔧 Safe DOM Injection
   function injectHelper(selector, config) {
     const field = document.querySelector(selector);
-    if (!field || field.dataset.sgoHelperInjected) return;
+    LOG(`💉 Injecting helper for ${selector}`);
+    if (!field) {
+      LOG(`❌ Field not found for selector: ${selector}`);
+      return;
+    }
+    if (field.dataset.sgoHelperInjected) {
+      LOG(`⚠️ Helper already injected for ${selector}`);
+      return;
+    }
     field.dataset.sgoHelperInjected = 'true';
+    LOG(`📍 Found field: ${field.tagName}#${field.id || field.name || 'unnamed'}`);
 
     const helper = document.createElement('div');
     helper.className = 'sgo-field-helper';
-    helper.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
+    helper.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; background: rgba(255,0,0,0.1); border: 1px solid red;';
     helper.innerHTML = config.html || '';
+    LOG(`🔨 Created helper element with content: ${config.html}`);
 
     if (field.parentNode) {
       field.parentNode.insertBefore(helper, field.nextSibling);
+      LOG(`✅ Helper inserted after field in DOM`);
+    } else {
+      LOG(`❌ Field has no parent node`);
     }
 
-    if (config.onMount) config.onMount(field, helper);
+    if (config.onMount) {
+      LOG(`🔧 Calling onMount callback`);
+      config.onMount(field, helper);
+    }
     
     LOG(`✅ Helper injected for ${selector}`);
   }
@@ -42,7 +58,7 @@
       LOG(`🔢 Creating counter for ${maxLen} chars`);
       const countEl = document.createElement('span');
       countEl.className = 'sgo-counter';
-      countEl.style.cssText = 'display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: #c7d5e0;';
+      countEl.style.cssText = 'display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: #fff; background: blue; padding: 2px 5px; font-weight: bold;';
       countEl.textContent = `0/${maxLen}`;
       helper.appendChild(countEl);
       LOG(`✅ Counter element created: ${countEl.textContent}`);
@@ -57,6 +73,7 @@
 
       field.addEventListener('input', update);
       update();
+      LOG(`✅ Counter initialized and update() called`);
     };
   }
 
@@ -121,7 +138,12 @@
     LOG('🔍 Initializing editguidesubsection helpers (Section Content Editor)...');
     
     const form = document.querySelector('#SubmitGuideForm, .subsection_form');
-    if (!form) return false;
+    LOG(`🔍 Looking for form: #SubmitGuideForm, .subsection_form`);
+    if (!form) {
+      LOG(`❌ Form not found`);
+      return false;
+    }
+    LOG(`✅ Found form: ${form.tagName}#${form.id || 'unnamed'}`);
 
     // Section Title Counter
     const titleSelector = '#sectiontitle, input[name="sectiontitle"]';
@@ -146,6 +168,7 @@
       injectHelper(bodySelector, {
         html: '<span class="sgo-helper-label">Section Content</span>',
         onMount: (field, helper) => {
+          LOG(`🎯 Mounting body helpers (counter + toolbar)`);
           createCounter(8000)(field, helper);
           createToolbar()(field, helper);
         }
