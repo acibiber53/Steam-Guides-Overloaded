@@ -974,10 +974,28 @@
   position: relative;
   z-index: 50;
   clear: both;
+  display: block !important;
+  box-sizing: border-box;
 }
 
 /* Match section list width to content area to prevent overlap */
 .sgo-section-list-panel {
-  max-width: 600px; /* Match typical content width */
+  max-width: 100%;
   margin-bottom: 15px;
+  box-sizing: border-box;
+}
+
+/* Constrain the helper container to match editGuideSubSectionContents width */
+.editGuideSubSectionTitleField ~ .sgo-field-helper,
+#title ~ .sgo-field-helper {
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+  clear: both;
+}
+
+/* Ensure the section list content doesn't overflow */
+.sgo-section-list {
+  max-width: 100%;
+  box-sizing: border-box;
 }
