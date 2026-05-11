@@ -976,6 +976,7 @@
   clear: both;
   display: block !important;
   box-sizing: border-box;
+  width:649px;
 }
 
 /* Match section list width to content area to prevent overlap */
