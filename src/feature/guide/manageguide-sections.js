@@ -10,8 +10,31 @@
   function setupManageGuide() {
     LOG('Initializing manageguide helpers (Guide Sections Management)...');
 
-    // Look for section management UI elements
-    const sectionList = document.querySelector('.guide_sections_list, #sectionContainer');
+    // Steam uses an iframe named 'upload_target' for the guide management content
+    let sectionList = null;
+    let iframeDoc = null;
+    
+    // Try to find the iframe first
+    const iframe = document.querySelector('iframe[name="upload_target"]');
+    if (iframe && iframe.contentDocument) {
+      try {
+        iframeDoc = iframe.contentDocument;
+        sectionList = iframeDoc.querySelector('#sortable_sub_sections');
+        LOG('Found section list inside iframe: #sortable_sub_sections');
+      } catch (e) {
+        LOG('Cannot access iframe content (cross-origin or not ready):', e);
+        return false;
+      }
+    }
+    
+    // Fallback to main document if iframe not found
+    if (!sectionList) {
+      sectionList = document.querySelector('.guide_sections_list, #sectionContainer, #sortable_sub_sections');
+      if (sectionList) {
+        LOG('Found section list in main document');
+      }
+    }
+
     if (!sectionList) {
       LOG('Section list container not found yet, waiting...');
       return false;
@@ -26,25 +49,26 @@
       </div>
     `;
 
-    if (sectionList.parentNode) {
-      sectionList.parentNode.insertBefore(helper, sectionList);
+    // Insert helper in appropriate location (in iframe doc if available, otherwise main doc)
+    const targetDoc = iframeDoc || document;
+    const insertTarget = sectionList.parentNode || targetDoc.body;
+    if (insertTarget) {
+      insertTarget.insertBefore(helper, sectionList);
     }
 
     // Extract and store section information for use in editguidesubsection page
-    extractAndStoreSections(sectionList);
+    extractAndStoreSections(sectionList, iframeDoc);
 
     LOG('ManageGuide helpers active');
     return true;
   }
 
   // Extract section names and store them
-  function extractAndStoreSections(sectionList) {
+  function extractAndStoreSections(sectionList, iframeDoc = null) {
     try {
       const sections = [];
-      // Try different selectors that Steam might use for section items
-      const sectionItems = sectionList.querySelectorAll(
-        '.guide_section_item, .section_item, [data-section-id], li.section, div.section'
-      );
+      // Steam uses .editGuideTOCSection class for each section item inside #sortable_sub_sections
+      const sectionItems = sectionList.querySelectorAll('.editGuideTOCSection');
 
       if (sectionItems.length === 0) {
         // Fallback: look for any clickable/list items within the section list
@@ -61,11 +85,16 @@
         });
       } else {
         sectionItems.forEach((item, index) => {
-          const titleEl = item.querySelector('.section_title, .title, h3, h4, span.title') || item;
-          const title = titleEl.textContent.trim().substring(0, 100);
+          // Steam uses .editGuideTOCSectionTitle div containing an <a> tag with the section name
+          const titleEl = item.querySelector('.editGuideTOCSectionTitle a, .editGuideTOCSectionTitle');
+          const title = titleEl ? titleEl.textContent.trim().substring(0, 100) : '';
+          
+          // Extract section ID from the element's id attribute (e.g., "subSection_8926990")
+          const sectionId = item.id.replace('subSection_', '') || `section_${index}`;
+          
           if (title && title.length > 0) {
             sections.push({
-              id: item.dataset?.sectionId || `section_${index}`,
+              id: sectionId,
               title: title,
               order: index
             });
