@@ -846,6 +846,8 @@
 .sgo-section-list-panel {
   margin-top: 8px;
   width: 100%;
+  position: relative;
+  z-index: 100;
 }
 
 .sgo-section-list-header {
@@ -884,18 +886,29 @@
   max-height: 200px;
   overflow-y: auto;
   transition: all 0.2s;
+  position: relative;
+  z-index: 101;
 }
 
 .sgo-section-list-content.collapsed {
   max-height: 0;
   overflow: hidden;
   opacity: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 .sgo-section-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  position: relative;
+  background: rgba(17, 28, 40, 0.95);
+  border: 1px solid rgba(42, 71, 94, 0.8);
+  border-radius: 3px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .sgo-section-list-item {
@@ -948,4 +961,17 @@
 
 .sgo-section-list-error {
   color: #d9534f;
+}
+
+/* Prevent section list from overlapping media areas */
+.editGuideSubSectionDescField ~ .sgo-field-helper .sgo-section-list-panel,
+#description ~ .sgo-field-helper .sgo-section-list-panel {
+  margin-top: 4px;
+}
+
+/* Ensure helper containers don't interfere with layout */
+.sgo-field-helper {
+  position: relative;
+  z-index: 50;
+  clear: both;
 }
