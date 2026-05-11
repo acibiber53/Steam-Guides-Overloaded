@@ -976,37 +976,8 @@
   clear: both;
 }
 
-/* CRITICAL: Force media selection container to clear floats and start below section list */
-.editGuideSubSectionMediaSelectionContainer {
-  position: relative !important;
-  clear: both !important;
-  margin-top: 15px !important;
-  z-index: 1 !important;
-  display: block !important;
-  float: none !important;
-}
-
-/* Ensure section list panel has proper spacing and doesn't use absolute positioning */
+/* Match section list width to content area to prevent overlap */
 .sgo-section-list-panel {
-  position: relative !important;
-  display: block !important;
-  float: none !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  margin-bottom: 15px !important;
-}
-
-.sgo-section-list-content {
-  position: relative !important;
-  clear: both !important;
-}
-
-/* Force all parent containers to respect document flow */
-.formField,
-.formItem,
-.section-input-container,
-.editGuideSubSectionDescField,
-#description {
-  position: relative !important;
-  clear: both !important;
+  max-width: 600px; /* Match typical content width */
+  margin-bottom: 15px;
 }
