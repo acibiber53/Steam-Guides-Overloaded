@@ -113,88 +113,91 @@
 /* Prevent layout shift on Steam's native textarea */
 .descField.guide { margin-bottom: 2px !important; }
 
-/* Template Sidepanel Styles */
-.sgo-sidepanel-wrapper {
+/* Right-side accordion stack container — also the visual backdrop card */
+#sgo-right-panel-stack {
   position: fixed;
-  top: 100px;
+  top: 56px;
   right: 0;
-  z-index: 9998;
+  width: 320px;
+  max-height: calc(100vh - 80px);
+  z-index: 9996;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: rgba(17, 28, 40, 0.85);
+  border: 1px solid rgba(102, 192, 244, 0.25);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  box-shadow: -3px 0 15px rgba(0, 0, 0, 0.35);
+  overflow-y: auto;
+  pointer-events: auto;
   font-family: "Motiva Sans", Arial, sans-serif;
 }
 
-/* When panel is closed, wrapper should not block clicks */
-.sgo-sidepanel-wrapper:not(:has(.sgo-sidepanel.open)) {
-  pointer-events: none;
+/* Each panel = toggle button + collapsible content, stacked as flex children */
+.sgo-sidepanel-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
-/* When panel is open, wrapper allows pointer events */
-.sgo-sidepanel-wrapper:has(.sgo-sidepanel.open) {
-  pointer-events: auto;
-}
-
-/* Collapsed Toggle Button */
+/* Toggle button (uniform across all panels) */
 .sgo-sidepanel-toggle {
-  position: absolute;
-  top: 0;
-  right: 0;
+  width: 100%;
+  box-sizing: border-box;
   background: linear-gradient(135deg, #2a475e 0%, #1b2838 100%);
   border: 1px solid #66c0f4;
-  border-right: none;
-  border-radius: 4px 0 0 4px;
+  border-radius: 4px;
   padding: 10px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.3);
-  pointer-events: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c7d5e0;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .sgo-sidepanel-toggle:hover {
   background: linear-gradient(135deg, #3d5c7a 0%, #2a475e 100%);
-  transform: translateX(-2px);
+  border-color: #8fd3ff;
 }
 
 .sgo-sidepanel-toggle.active {
-  display: none;
+  border-color: #8fd3ff;
+  background: linear-gradient(135deg, #3d5c7a 0%, #2a475e 100%);
 }
 
-.toggle-icon {
-  font-size: 16px;
-  pointer-events: auto;
-}
+.sgo-sidepanel-toggle .toggle-icon { font-size: 14px; }
+.sgo-sidepanel-toggle .toggle-text { flex: 1; text-align: left; color: #c7d5e0; }
 
-.toggle-text {
-  color: #c7d5e0;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  pointer-events: auto;
-}
-
-/* Sidepanel */
+/* Collapsible panel content (accordion expand) */
 .sgo-sidepanel {
-  width: 320px;
-  max-height: calc(100vh - 120px);
+  width: 100%;
   background: rgba(27, 40, 56, 0.98);
   border: 1px solid rgba(102, 192, 244, 0.4);
-  border-radius: 4px 0 0 4px;
+  border-radius: 0 0 4px 4px;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
+  max-height: 0;
   opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s ease,
+              margin-top 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0;
 }
 
 .sgo-sidepanel.open {
-  transform: translateX(0);
+  max-height: 70vh;
   opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+  overflow-y: auto;
+  margin-top: -4px;
 }
 
 .sgo-sp-header {
@@ -999,4 +1002,499 @@
 .sgo-section-list {
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* ── Achievement Panel ──────────────────────────────────────────────────── */
+
+.sgo-open-achievements {
+  background: linear-gradient(135deg, #2a475e 0%, #1b2838 100%);
+  color: #c7d5e0;
+  border: 1px solid #66c0f4;
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+}
+
+.sgo-open-achievements:hover {
+  background: linear-gradient(135deg, #3d5c7a 0%, #2a475e 100%);
+  border-color: #8fd3ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(102, 192, 244, 0.3);
+}
+
+.sgo-open-achievements:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.sgo-ap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(42, 71, 94, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px 0 0 0;
+  flex-shrink: 0;
+}
+
+.sgo-ap-title {
+  color: #66c0f4;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sgo-ap-header-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.sgo-ap-refresh,
+.sgo-ap-close {
+  background: transparent;
+  border: none;
+  color: #8f98a0;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: all 0.15s;
+}
+
+.sgo-ap-refresh:hover { background: rgba(102, 192, 244, 0.15); color: #66c0f4; }
+.sgo-ap-close:hover   { background: rgba(217, 83, 79, 0.2); color: #d9534f; }
+
+.sgo-ap-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.sgo-ap-download-btn {
+  background: linear-gradient(135deg, #2a6e3a 0%, #1a4a27 100%);
+  border: 1px solid #3cb05a;
+  color: #c7d5e0;
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.sgo-ap-download-btn:hover {
+  background: linear-gradient(135deg, #3d9952 0%, #2a6e3a 100%);
+  border-color: #5dce7c;
+  color: #fff;
+}
+
+.sgo-ap-search {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(42, 71, 94, 0.8);
+  border-radius: 3px;
+  padding: 6px 10px;
+  color: #c7d5e0;
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.sgo-ap-search:focus { border-color: #66c0f4; }
+.sgo-ap-search::placeholder { color: #5c6b7a; }
+
+.sgo-ap-template-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.sgo-ap-tpl-label {
+  color: #8f98a0;
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+.sgo-ap-tpl-select {
+  flex: 1;
+  background: #1b2838;
+  color: #c7d5e0;
+  border: 1px solid #2a475e;
+  padding: 3px 6px;
+  border-radius: 2px;
+  font-size: 10px;
+  cursor: pointer;
+  outline: none;
+  min-width: 0;
+}
+
+.sgo-ap-tpl-edit-btn {
+  background: #2a475e;
+  border: 1px solid #1a2b3c;
+  color: #c7d5e0;
+  padding: 3px 7px;
+  border-radius: 2px;
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.sgo-ap-tpl-edit-btn:hover { background: #3d5c7a; color: #fff; }
+
+/* ── Achievement panel — cold-start prompt ── */
+.sgo-ap-no-appid { padding: 16px; color: #8ba0b4; font-size: 12px; }
+.sgo-ap-no-appid p { margin: 0 0 10px; line-height: 1.5; }
+.sgo-ap-appid-row { display: flex; gap: 6px; margin-top: 4px; }
+.sgo-ap-appid-input {
+  flex: 1;
+  background: #1b2838;
+  border: 1px solid #4a5a6a;
+  color: #c6d4df;
+  padding: 5px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.sgo-ap-appid-save {
+  background: #4c6b22;
+  border: 1px solid #a4d007;
+  color: #d2e885;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.sgo-ap-appid-save:hover { background: #5c7a2a; }
+
+/* ── Guides panel — filter row ── */
+.sgo-gp-filter {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.sgo-gp-filter-btn {
+  background: #1b2838;
+  border: 1px solid #4a5a6a;
+  color: #8ba0b4;
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.15s;
+}
+.sgo-gp-filter-btn:hover { border-color: #66c0f4; color: #c6d4df; }
+.sgo-gp-filter-btn.active { border-color: #66c0f4; color: #66c0f4; background: rgba(102,192,244,0.1); }
+
+/* ── Guides panel — list items ── */
+.sgo-gp-item {
+  border-bottom: 1px solid #2a3f5a;
+  padding: 8px 4px;
+}
+.sgo-gp-item:last-child { border-bottom: none; }
+.sgo-gp-item-title { color: #c6d4df; font-size: 12px; font-weight: bold; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sgo-gp-item-meta { color: #8ba0b4; font-size: 11px; margin-bottom: 4px; }
+.sgo-gp-item-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.sgo-gp-edit-btn {
+  color: #66c0f4;
+  font-size: 11px;
+  text-decoration: none;
+}
+.sgo-gp-edit-btn:hover { color: #fff; text-decoration: underline; }
+.sgo-gp-assign-btn {
+  background: #4c6b22;
+  border: 1px solid #a4d007;
+  color: #d2e885;
+  padding: 2px 7px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.15s;
+}
+.sgo-gp-assign-btn:hover { background: #5c7a2a; }
+.sgo-gp-empty { padding: 16px; color: #8ba0b4; font-size: 12px; text-align: center; }
+.sgo-gp-search {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1b2838;
+  border: 1px solid #4a5a6a;
+  color: #c6d4df;
+  padding: 5px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.sgo-gp-search:focus { outline: none; border-color: #66c0f4; }
+
+/* ── Game Profile panel content ─────────────────────────────────────────── */
+.sgo-gp-header-img {
+  display: block;
+  border-radius: 3px;
+  margin: 10px 12px;
+  width: calc(100% - 24px);
+  height: auto;
+}
+.sgo-gp-name {
+  margin: 0 12px 8px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.sgo-gp-meta {
+  margin: 0 12px 10px;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 10px;
+  font-size: 11px;
+}
+.sgo-gp-meta dt { color: #8ba0b4; }
+.sgo-gp-meta dd { color: #c6d4df; margin: 0; }
+.sgo-gp-desc {
+  margin: 0 12px 12px;
+  color: #c6d4df;
+  font-size: 11px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sgo-gp-actions {
+  display: flex;
+  gap: 6px;
+  margin: 0 12px 12px;
+  flex-wrap: wrap;
+}
+.sgo-gp-actions a {
+  flex: 1;
+  text-align: center;
+  background: #2a475e;
+  border: 1px solid #4a5a6a;
+  color: #c6d4df;
+  padding: 6px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  text-decoration: none;
+}
+.sgo-gp-actions a:hover { background: #3d5c7a; color: #fff; }
+.sgo-gp-change {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sgo-gp-change label { color: #8ba0b4; font-size: 11px; white-space: nowrap; }
+.sgo-gp-change input {
+  flex: 1;
+  background: #0e1621;
+  border: 1px solid #4a5a6a;
+  color: #c6d4df;
+  padding: 4px 7px;
+  border-radius: 3px;
+  font-size: 11px;
+  min-width: 0;
+}
+.sgo-gp-change input:focus { outline: none; border-color: #66c0f4; }
+.sgo-gp-change button {
+  background: #4c6b22;
+  border: 1px solid #a4d007;
+  color: #d2e885;
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.sgo-gp-change button:hover { background: #5c7a2a; }
+.sgo-gp-no-appid { padding: 12px; color: #8ba0b4; font-size: 12px; }
+.sgo-gp-no-appid p { margin: 0 0 8px; line-height: 1.45; }
+.sgo-gp-loading { padding: 16px; color: #8ba0b4; font-size: 12px; text-align: center; }
+
+.sgo-ap-tpl-editor {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.sgo-ap-tpl-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(42, 71, 94, 0.8);
+  border-radius: 3px;
+  padding: 6px 8px;
+  color: #c7d5e0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 10px;
+  resize: vertical;
+  min-height: 72px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.sgo-ap-tpl-textarea:focus { border-color: #66c0f4; }
+
+.sgo-ap-tpl-tokens {
+  margin: 4px 0;
+  color: #5c6b7a;
+  font-size: 9px;
+}
+
+.sgo-ap-tpl-tokens code {
+  background: rgba(42, 71, 94, 0.5);
+  padding: 1px 4px;
+  border-radius: 2px;
+  color: #66c0f4;
+  margin: 0 2px;
+}
+
+.sgo-ap-tpl-save {
+  background: #66c0f4;
+  border: none;
+  color: #1b2838;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+
+.sgo-ap-tpl-save:hover { background: #85d0ff; }
+
+.sgo-ap-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sgo-ap-list::-webkit-scrollbar { width: 6px; }
+.sgo-ap-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
+.sgo-ap-list::-webkit-scrollbar-thumb { background: #2a475e; border-radius: 3px; }
+
+.sgo-ap-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  background: rgba(27, 40, 56, 0.6);
+  border: 1px solid rgba(42, 71, 94, 0.5);
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.sgo-ap-item:hover {
+  background: rgba(42, 71, 94, 0.4);
+  border-color: #66c0f4;
+}
+
+.sgo-ap-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: rgba(0,0,0,0.3);
+}
+
+.sgo-ap-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sgo-ap-title-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sgo-ap-name {
+  color: #66c0f4;
+  font-weight: 600;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sgo-ap-mapped-badge {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.sgo-ap-desc {
+  color: #8f98a0;
+  font-size: 10px;
+  line-height: 1.3;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sgo-ap-insert-btn {
+  background: rgba(102, 192, 244, 0.15);
+  border: 1px solid rgba(102, 192, 244, 0.4);
+  color: #66c0f4;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.sgo-ap-insert-btn:hover {
+  background: #66c0f4;
+  color: #1b2838;
+  border-color: #66c0f4;
+}
+
+.sgo-ap-empty {
+  color: #8f98a0;
+  font-size: 11px;
+  text-align: center;
+  padding: 24px 10px;
+}
+
+.sgo-ap-error {
+  color: #d9534f;
+}
+
+.sgo-ap-footer {
+  padding: 6px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.sgo-ap-status {
+  color: #5c6b7a;
+  font-size: 9px;
 }

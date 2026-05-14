@@ -5,6 +5,8 @@
 
   // Storage key for guide sections
   const SECTIONS_STORAGE_KEY = 'sgo_guide_sections';
+  const IMAGE_MAP_KEY        = 'sgo_image_map';
+  const USER_GUIDES_KEY      = 'sgo_user_guides';
 
   // Main Initialization
   function setupManageGuide() {
@@ -58,6 +60,8 @@
 
     // Extract and store section information for use in editguidesubsection page
     extractAndStoreSections(sectionList, iframeDoc);
+    extractAndStoreImageMap();
+    saveGuideToList();
 
     LOG('ManageGuide helpers active');
     return true;
@@ -114,6 +118,83 @@
       }
     } catch (e) {
       LOG('Error extracting sections:', e);
+    }
+  }
+
+  // Save current guide info to the user's guide list in localStorage
+  function saveGuideToList() {
+    try {
+      const guideId = new URLSearchParams(window.location.search).get('id');
+      if (!guideId) return;
+      const titleEl = document.querySelector('.editGuideTitle, h2.title, #title');
+      const title   = titleEl ? titleEl.textContent.trim() : 'Guide ' + guideId;
+      const appid   = localStorage.getItem('sgo_guide_' + guideId + '_appid') || localStorage.getItem('sgo_game_appid') || null;
+      const guides  = JSON.parse(localStorage.getItem(USER_GUIDES_KEY) || '[]');
+      const idx     = guides.findIndex(g => g.id === guideId);
+      const entry   = { id: guideId, title, appid, updated: Date.now() };
+      if (idx >= 0) guides[idx] = { ...guides[idx], ...entry };
+      else guides.push(entry);
+      localStorage.setItem(USER_GUIDES_KEY, JSON.stringify(guides));
+      LOG(`Saved guide to list: ${title} (${guideId})`);
+    } catch (e) {
+      LOG('Error saving guide to list: ' + e.message);
+    }
+  }
+
+  // Extract uploaded guide image IDs and build a title→id map
+  function extractAndStoreImageMap() {
+    try {
+      const existing = JSON.parse(localStorage.getItem(IMAGE_MAP_KEY) || '{}');
+      const titleToId = existing.titleToId || {};
+      const idToTitle = existing.idToTitle || {};
+      let found = 0;
+
+      function stemKey(name) {
+        return (name || '').replace(/\.[^.]+$/, '').toLowerCase().trim();
+      }
+
+      function addMapping(id, filename) {
+        const key = stemKey(filename);
+        if (key && id && !titleToId[key]) {
+          titleToId[key] = id;
+          idToTitle[id]  = filename;
+          found++;
+        }
+      }
+
+      // Pattern 1: elements with data-publishedfileid / data-workshopid
+      document.querySelectorAll('[data-publishedfileid], [data-workshopid]').forEach(el => {
+        const id = el.dataset.publishedfileid || el.dataset.workshopid;
+        const filename = el.dataset.filename || el.getAttribute('title') || el.textContent.trim();
+        if (id && filename) addMapping(id, filename);
+      });
+
+      // Pattern 2: anchor tags to sharedfiles/filedetails with title/text that looks like a filename
+      document.querySelectorAll('a[href*="sharedfiles/filedetails"]').forEach(a => {
+        const m = a.href.match(/[?&]id=(\d+)/);
+        if (!m) return;
+        const id = m[1];
+        const filename = (a.getAttribute('title') || a.textContent || '').trim();
+        if (filename) addMapping(id, filename);
+      });
+
+      // Pattern 3: parse any existing [previewimg=...] BBCode in textareas on the page
+      document.querySelectorAll('textarea').forEach(ta => {
+        const re = /\[previewimg=(\d+);[^\]]*?;([^\]]+?)\]\[\/previewimg\]/g;
+        let hit;
+        while ((hit = re.exec(ta.value)) !== null) {
+          addMapping(hit[1], hit[2].trim());
+        }
+      });
+
+      if (found > 0) {
+        localStorage.setItem(IMAGE_MAP_KEY, JSON.stringify({ titleToId, idToTitle }));
+        LOG(`Image map updated: added ${found} mapping(s)`);
+      } else {
+        LOG('No new image mappings found on manageguide page');
+      }
+    } catch (e) {
+      LOG('Error extracting image map: ' + e.message);
     }
   }
 

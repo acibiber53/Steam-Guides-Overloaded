@@ -91,45 +91,6 @@
     };
   }
 
-  // Template Button to Open Sidepanel
-  function createTemplateButton() {
-    return (field, helper) => {
-      const toolbar = document.createElement('div');
-      toolbar.className = 'sgo-template-button';
-      
-      // Create button to open template sidepanel
-      toolbar.innerHTML = `
-        <button type="button" class="sgo-open-templates" title="Open Template Library">
-          📋 Templates
-        </button>
-      `;
-
-      helper.appendChild(toolbar);
-
-      const button = toolbar.querySelector('.sgo-open-templates');
-      
-      button.addEventListener('click', () => {
-        // Find and open the template sidepanel
-        const panel = document.querySelector('#sgo-template-sidepanel');
-        const toggle = document.querySelector('#sgo-template-toggle');
-        
-        if (panel && toggle) {
-          panel.classList.add('open');
-          toggle.classList.add('active');
-          LOG('Template sidepanel opened via button');
-        } else {
-          LOG('Template sidepanel not found - it may not be initialized yet');
-          // Optionally trigger initialization if needed
-          if (window.SGO && window.SGO.initTemplateSidepanel) {
-            window.SGO.initTemplateSidepanel();
-          }
-        }
-      });
-      
-      LOG('Template button created');
-    };
-  }
-
   function insertAtCursor(textarea, text) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -267,9 +228,11 @@
       injectHelper(bodySelector, {
         html: '<span class="sgo-helper-label">Section Content</span>',
         onMount: (field, helper) => {
-          LOG(`Mounting body helpers (counter + template button)`);
+          LOG(`Mounting body helpers (counter + achievement sidepanel)`);
           createCounter(8000)(field, helper);
-          createTemplateButton()(field, helper);
+          if (window.SGO?.AchievementPanel?.initPanel) {
+            window.SGO.AchievementPanel.initPanel(field);
+          }
         }
       });
     } else {
@@ -282,6 +245,7 @@
 
   // Expose to router
   window.SGO = window.SGO || {};
+  window.SGO.insertAtCursor = insertAtCursor;
   window.SGO.initEditSubsection = function() {
     const observer = new MutationObserver((mutations, obs) => {
       if (setupEditSubsection()) obs.disconnect();

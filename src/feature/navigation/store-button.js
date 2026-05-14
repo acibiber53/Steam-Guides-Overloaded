@@ -8,6 +8,11 @@
     if (!urlMatch) return;
     const appId = urlMatch[1];
 
+    const iconImg = document.querySelector('.apphub_AppIcon img');
+    if (iconImg?.src) {
+      localStorage.setItem('sgo_game_icon_' + appId, iconImg.src);
+    }
+
     const container = document.querySelector('.apphub_OtherSiteInfo');
     if (!container) return;
     if (document.getElementById('sge-create-guide-btn')) return;
@@ -24,6 +29,9 @@
     btn.id = 'sge-create-guide-btn';
     btn.style.marginRight = '8px';
     btn.innerHTML = '<span>Create Guide</span>';
+    btn.addEventListener('click', () => {
+      sessionStorage.setItem('sgo_pending_appid', appId);
+    });
 
     try {
       container.insertBefore(btn, targetBtn);

@@ -802,15 +802,19 @@ Link to interactive maps or screenshots showing locations
       // Create and inject the sidepanel
       const sidepanel = createTemplateSidepanel();
       sidepanel.id = 'sgo-template-sidepanel-wrapper';
-      document.body.appendChild(sidepanel);
+      (window.SGO?.getPanelStack?.() || document.body).appendChild(sidepanel);
 
       const panel = document.querySelector('#sgo-template-sidepanel');
       const toggle = document.querySelector('#sgo-template-toggle');
 
       // Toggle panel visibility
       toggle.addEventListener('click', () => {
-        panel.classList.toggle('open');
-        toggle.classList.toggle('active');
+        const wasOpen = panel.classList.contains('open');
+        window.SGO?.closeAllPanels?.();
+        if (!wasOpen) {
+          panel.classList.add('open');
+          toggle.classList.add('active');
+        }
       });
 
       // Close button

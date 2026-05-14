@@ -118,6 +118,21 @@
     textarea.setSelectionRange(start + text.length, start + text.length);
   }
 
+  // Resolve pending AppID (set by store-button click) when arriving on editguide page
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const urlAppid = params.get('appid');
+    const pending  = sessionStorage.getItem('sgo_pending_appid');
+    const appid    = urlAppid || pending;
+    if (appid) {
+      localStorage.setItem('sgo_game_appid', appid);
+      if (pending) sessionStorage.removeItem('sgo_pending_appid');
+      const guideId = params.get('id');
+      if (guideId) localStorage.setItem('sgo_guide_' + guideId + '_appid', appid);
+      LOG('AppID resolved on editguide: ' + appid);
+    }
+  })();
+
   // 🚀 Main Initialization
   function setupEditGuide() {
     LOG('🔍 Initializing editguide helpers (Basic Guide Information)...');
