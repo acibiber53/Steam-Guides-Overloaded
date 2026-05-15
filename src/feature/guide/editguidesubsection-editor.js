@@ -3,9 +3,6 @@
   'use strict';
   const LOG = msg => console.log('[SGO:EditSubsection]', msg);
 
-  // Storage key for guide sections
-  const SECTIONS_STORAGE_KEY = 'sgo_guide_sections';
-
   // Safe DOM Injection
   function injectHelper(selector, config) {
     const field = document.querySelector(selector);
@@ -98,112 +95,37 @@
     textarea.setSelectionRange(start + text.length, start + text.length);
   }
 
-  // Section List Panel - Shows chapters/sections from manageguide page
-  function createSectionListPanel() {
-    return (field, helper) => {
-      LOG('Creating section list panel');
-      
-      const sectionListContainer = document.createElement('div');
-      sectionListContainer.className = 'sgo-section-list-panel';
-      sectionListContainer.innerHTML = `
-        <div class="sgo-section-list-header">
-          <span class="sgo-section-list-title">📑 Guide Sections</span>
-          <button type="button" class="sgo-section-list-toggle" title="Toggle section list">▼</button>
-        </div>
-        <div class="sgo-section-list-content">
-          <div class="sgo-section-list-loading">Loading sections...</div>
-        </div>
-      `;
-
-      helper.appendChild(sectionListContainer);
-
-      // Toggle functionality
-      const toggleBtn = sectionListContainer.querySelector('.sgo-section-list-toggle');
-      const contentDiv = sectionListContainer.querySelector('.sgo-section-list-content');
-      
-      toggleBtn.addEventListener('click', () => {
-        contentDiv.classList.toggle('collapsed');
-        toggleBtn.textContent = contentDiv.classList.contains('collapsed') ? '▶' : '▼';
-      });
-
-      // Load sections from localStorage
-      loadSections(contentDiv);
-
-      LOG('Section list panel created');
+  // Cascade Panel - chapter visibility (fill bars + freshness + previews).
+  // Delegates to SGO.CascadePanel which lives in cascade-panel.js.
+  function createSectionListPanel(ctx) {
+    return (_titleField, helper) => {
+      const bodyField = document.querySelector('#description, textarea[name="description"], .editGuideSubSectionDescField');
+      if (window.SGO?.CascadePanel?.mount) {
+        window.SGO.CascadePanel.mount(bodyField, helper, {
+          guideId: ctx.guideId,
+          currentSectionId: ctx.sectionId
+        });
+      } else {
+        LOG('CascadePanel not loaded; cannot render chapter visibility panel');
+      }
     };
   }
 
-  // Load sections from localStorage and display them
-  function loadSections(container) {
-    try {
-      const stored = localStorage.getItem(SECTIONS_STORAGE_KEY);
-      if (!stored) {
-        container.innerHTML = '<div class="sgo-section-list-empty">No sections found. Visit the manage guide page first.</div>';
-        return;
-      }
-
-      const data = JSON.parse(stored);
-      const sections = data.sections || [];
-
-      if (sections.length === 0) {
-        container.innerHTML = '<div class="sgo-section-list-empty">No sections available.</div>';
-        return;
-      }
-
-      // Sort by order
-      sections.sort((a, b) => a.order - b.order);
-
-      const listHtml = sections.map((section, index) => `
-        <div class="sgo-section-list-item" data-section-id="${section.id}" title="${section.title}">
-          <span class="sgo-section-number">${index + 1}.</span>
-          <span class="sgo-section-title">${escapeHtml(section.title)}</span>
-        </div>
-      `).join('');
-
-      container.innerHTML = `<div class="sgo-section-list">${listHtml}</div>`;
-
-      // Add click handlers to navigate to sections (if possible)
-      container.querySelectorAll('.sgo-section-list-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const sectionId = item.dataset.sectionId;
-          LOG(`Section clicked: ${sectionId}`);
-          // In the future, this could navigate to the section or highlight it
-          // For now, just copy the section title to clipboard or show info
-          const title = item.querySelector('.sgo-section-title').textContent;
-          navigator.clipboard.writeText(title).then(() => {
-            LOG(`Copied section title to clipboard: ${title}`);
-            // Show temporary feedback
-            item.classList.add('sgo-section-copied');
-            setTimeout(() => item.classList.remove('sgo-section-copied'), 1000);
-          }).catch(err => {
-            LOG('Failed to copy to clipboard:', err);
-          });
-        });
-      });
-
-      LOG(`Loaded ${sections.length} sections`);
-    } catch (e) {
-      LOG('Error loading sections:', e);
-      container.innerHTML = '<div class="sgo-section-list-error">Error loading sections.</div>';
-    }
-  }
-
-  // Escape HTML to prevent XSS
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
   // Main Initialization
-  function setupEditSubsection() {
+  function setupEditSubsection(ctx) {
     LOG('Initializing editguidesubsection helpers (Section Content Editor)...');
-    
+
+    // Resolve guideId/sectionId — prefer router-provided values, fall back to URL.
+    const params = new URLSearchParams(window.location.search);
+    const guideId = ctx?.guideId || params.get('id');
+    const sectionId = ctx?.sectionId || params.get('sectionid');
+    LOG(`Context: guideId=${guideId} sectionId=${sectionId}`);
+
     // No need to find form first - just look for the fields directly
     LOG(`Looking for title field: #title, input[name="title"], .editGuideSubSectionTitleField`);
     LOG(`Looking for content field: #description, textarea[name="description"], .editGuideSubSectionDescField`);
 
-    // Section Title Counter + Section List Panel
+    // Section Title Counter + Cascade Panel
     const titleSelector = '#title, input[name="title"], .editGuideSubSectionTitleField';
     const titleField = document.querySelector(titleSelector);
     if (titleField) {
@@ -211,9 +133,9 @@
       injectHelper(titleSelector, {
         html: '<span class="sgo-helper-label">Section Title</span>',
         onMount: (field, helper) => {
-          LOG('Mounting title helpers (counter + section list)');
+          LOG('Mounting title helpers (counter + cascade panel)');
           createCounter(128)(field, helper);
-          createSectionListPanel()(field, helper);
+          createSectionListPanel({ guideId, sectionId })(field, helper);
         }
       });
     } else {
@@ -228,10 +150,33 @@
       injectHelper(bodySelector, {
         html: '<span class="sgo-helper-label">Section Content</span>',
         onMount: (field, helper) => {
-          LOG(`Mounting body helpers (counter + achievement sidepanel)`);
+          LOG(`Mounting body helpers (counter + cut-to-buffer + achievement sidepanel)`);
           createCounter(8000)(field, helper);
+
+          const cutBtn = document.createElement('button');
+          cutBtn.type = 'button';
+          cutBtn.className = 'sgo-cut-to-buffer-btn';
+          cutBtn.textContent = '✂ Cut to Buffer';
+          cutBtn.title = 'Remove selected text and save it to the staging buffer';
+          cutBtn.addEventListener('click', () => {
+            const titleEl = document.querySelector('#title, input[name="title"], .editGuideSubSectionTitleField');
+            const sectionTitle = titleEl ? (titleEl.value || '').trim() : '';
+            const staged = window.SGO?.StagingBufferPanel?.stageSelected(field, guideId, sectionId, sectionTitle);
+            if (!staged) {
+              const orig = cutBtn.textContent;
+              cutBtn.textContent = '✂ Select text first';
+              setTimeout(() => { cutBtn.textContent = orig; }, 2000);
+            } else {
+              window.SGO?.StagingBufferPanel?.refresh?.();
+            }
+          });
+          helper.appendChild(cutBtn);
+
           if (window.SGO?.AchievementPanel?.initPanel) {
             window.SGO.AchievementPanel.initPanel(field);
+          }
+          if (window.SGO?.StagingBufferPanel?.init) {
+            window.SGO.StagingBufferPanel.init(field, { guideId, sectionId });
           }
         }
       });
@@ -246,11 +191,11 @@
   // Expose to router
   window.SGO = window.SGO || {};
   window.SGO.insertAtCursor = insertAtCursor;
-  window.SGO.initEditSubsection = function() {
+  window.SGO.initEditSubsection = function(ctx) {
     const observer = new MutationObserver((mutations, obs) => {
-      if (setupEditSubsection()) obs.disconnect();
+      if (setupEditSubsection(ctx)) obs.disconnect();
     });
     observer.observe(document.body, { childList: true, subtree: true });
-    setTimeout(() => setupEditSubsection(), 1500); // Fallback if DOM loads fast
+    setTimeout(() => setupEditSubsection(ctx), 1500); // Fallback if DOM loads fast
   };
 })();

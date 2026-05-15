@@ -800,12 +800,11 @@ Link to interactive maps or screenshots showing locations
       obs.disconnect();
       
       // Create and inject the sidepanel
-      const sidepanel = createTemplateSidepanel();
-      sidepanel.id = 'sgo-template-sidepanel-wrapper';
-      (window.SGO?.getPanelStack?.() || document.body).appendChild(sidepanel);
-
-      const panel = document.querySelector('#sgo-template-sidepanel');
-      const toggle = document.querySelector('#sgo-template-toggle');
+      const _wrapper = createTemplateSidepanel();
+      const toggle = _wrapper.querySelector('#sgo-template-toggle');
+      const panel = _wrapper.querySelector('#sgo-template-sidepanel');
+      (window.SGO?.getToggleBar?.() || document.body).appendChild(toggle);
+      (window.SGO?.getPanelArea?.() || document.body).appendChild(panel);
 
       // Toggle panel visibility
       toggle.addEventListener('click', () => {
@@ -824,15 +823,15 @@ Link to interactive maps or screenshots showing locations
       });
       
       // Initial render
-      renderCategoryButtons(sidepanel);
-      renderTemplateList(sidepanel);
-      
+      renderCategoryButtons(panel);
+      renderTemplateList(panel);
+
       // Category filter buttons (delegated event for dynamic content)
-      sidepanel.querySelector('#sgo-sp-categories-container').addEventListener('click', (e) => {
+      panel.querySelector('#sgo-sp-categories-container').addEventListener('click', (e) => {
         if (e.target.classList.contains('sgo-sp-cat')) {
-          sidepanel.querySelectorAll('.sgo-sp-cat').forEach(b => b.classList.remove('active'));
+          panel.querySelectorAll('.sgo-sp-cat').forEach(b => b.classList.remove('active'));
           e.target.classList.add('active');
-          renderTemplateList(sidepanel, e.target.dataset.cat);
+          renderTemplateList(panel, e.target.dataset.cat);
         }
       });
 
@@ -842,8 +841,8 @@ Link to interactive maps or screenshots showing locations
       searchInput.addEventListener('input', () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-          const activeCat = sidepanel.querySelector('.sgo-sp-cat.active')?.dataset.cat || 'all';
-          renderTemplateList(sidepanel, activeCat, searchInput.value.trim());
+          const activeCat = panel.querySelector('.sgo-sp-cat.active')?.dataset.cat || 'all';
+          renderTemplateList(panel, activeCat, searchInput.value.trim());
         }, 300);
       });
 
@@ -859,9 +858,9 @@ Link to interactive maps or screenshots showing locations
         const file = e.target.files[0];
         if (file) {
           importTemplates(file).then(() => {
-            const activeCat = sidepanel.querySelector('.sgo-sp-cat.active').dataset.cat;
+            const activeCat = panel.querySelector('.sgo-sp-cat.active').dataset.cat;
             const query = searchInput.value.trim();
-            renderTemplateList(sidepanel, activeCat, query);
+            renderTemplateList(panel, activeCat, query);
             e.target.value = ''; // Reset input
           }).catch(err => {
             alert('Failed to import templates: ' + err.message);
@@ -871,7 +870,7 @@ Link to interactive maps or screenshots showing locations
 
       // New template button - improved with better UI
       document.querySelector('#sgo-sp-new').addEventListener('click', () => {
-        showCreateTemplateModal(sidepanel);
+        showCreateTemplateModal(panel);
       });
 
       // Categories management button

@@ -153,11 +153,7 @@
   }
 
   function initGameProfile() {
-    if (document.getElementById('sgo-game-profile-wrapper')) return;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'sgo-sidepanel-wrapper';
-    wrapper.id = 'sgo-game-profile-wrapper';
+    if (document.getElementById('sgo-game-profile-toggle')) return;
 
     const toggle = document.createElement('div');
     toggle.className = 'sgo-sidepanel-toggle';
@@ -188,9 +184,8 @@
       toggle.classList.remove('active');
     });
 
-    wrapper.appendChild(toggle);
-    wrapper.appendChild(panel);
-    (window.SGO?.getPanelStack?.() || document.body).appendChild(wrapper);
+    (window.SGO?.getToggleBar?.() || document.body).appendChild(toggle);
+    (window.SGO?.getPanelArea?.() || document.body).appendChild(panel);
 
     renderProfile(panel);
     LOG('Game Profile panel initialized (appid: ' + (resolveGuideAppId() || 'none') + ')');

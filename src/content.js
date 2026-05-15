@@ -54,19 +54,19 @@
   }
 
   function closeAllPanels() {
-    document.querySelectorAll('.sgo-sidepanel.open').forEach(panel => {
-      panel.classList.remove('open');
-      const toggle = panel.parentElement?.querySelector('.sgo-sidepanel-toggle');
-      toggle?.classList.remove('active');
-    });
+    document.querySelectorAll('.sgo-sidepanel.open').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.sgo-sidepanel-toggle.active').forEach(t => t.classList.remove('active'));
   }
 
   window.SGO = window.SGO || {};
   window.SGO.getPanelStack = ensurePanelStack;
   window.SGO.closeAllPanels = closeAllPanels;
+  window.SGO.getToggleBar = ensurePanelStack;
+  window.SGO.getPanelArea = ensurePanelStack;
 
   function init() {
     const route = getRoute();
+    const params = new URLSearchParams(window.location.search);
     LOG(`🗺️ Route detected: ${route}`);
 
     switch (route) {
@@ -88,7 +88,10 @@
       case 'editguidesubsection':
         ensurePanelStack();
         window.SGO?.initGameProfile?.();
-        window.SGO?.initEditSubsection?.();
+        window.SGO?.initEditSubsection?.({
+          guideId: params.get('id'),
+          sectionId: params.get('sectionid')
+        });
         break;
       default:
         break;

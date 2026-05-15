@@ -23,6 +23,9 @@
       "src/feature/guide/game-badge.js",
       "src/feature/guide/guides-panel.js",
       "src/feature/achievements/achievement-panel.js",
+      "src/feature/guide/section-cache.js",
+      "src/feature/guide/cascade-panel.js",
+      "src/feature/guide/staging-buffer-panel.js",
       "src/feature/guide/editguidesubsection-editor.js",
       "src/content.js"
     ],

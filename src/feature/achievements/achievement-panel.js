@@ -396,13 +396,9 @@
   }
 
   function initPanel(textarea) {
-    if (getWrapper()) return;
+    if (getToggle()) return;
 
     seedImageMapFromTextarea(textarea);
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'sgo-sidepanel-wrapper';
-    wrapper.id = 'sgo-achievement-wrapper';
 
     const toggle = document.createElement('div');
     toggle.className = 'sgo-sidepanel-toggle';
@@ -416,9 +412,8 @@
     });
 
     const panel = buildPanel(textarea);
-    wrapper.appendChild(toggle);
-    wrapper.appendChild(panel);
-    (window.SGO?.getPanelStack?.() || document.body).appendChild(wrapper);
+    (window.SGO?.getToggleBar?.() || document.body).appendChild(toggle);
+    (window.SGO?.getPanelArea?.() || document.body).appendChild(panel);
 
     const appid = resolveAppId();
     if (!appid) {
@@ -440,7 +435,7 @@
     btn.textContent = '🏆 Achievements';
 
     btn.addEventListener('click', () => {
-      if (!getWrapper()) {
+      if (!getToggle()) {
         initPanel(textarea);
         // Slight delay so panel is in DOM before we open it
         setTimeout(openPanel, 50);
