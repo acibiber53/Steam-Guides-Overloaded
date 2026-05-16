@@ -145,31 +145,26 @@ Content scripts run on every matching page; `content.js` gates initialisation by
 
 ---
 
-## Git & GitHub Workflow — Two-Branch Model
+## Git & GitHub Workflow
 
-| Branch | Purpose |
-|--------|---------|
-| `dev` | Working branch — all commits land here, pushed immediately |
-| `main` | Stable branch — only promoted from `dev` with explicit user approval |
+Two branches, one direction of flow. All work happens on `dev`; `main` only ever fast-forwards to `dev`'s tip.
 
-### Committing
+### During the session
 
-- Commit at **logical units of work** (a complete feature, a named bug fix, a clean refactor) — not after every individual file save
-- Format: `<type>: <short description>` — types: `feat`, `fix`, `refactor`, `style`, `docs`
-- Push to `origin dev` immediately after every commit (pre-authorized in `.claude/settings.json`)
-- Never force-push either branch
+- Commit at logical units of work (a complete feature, a named bug fix, a clean refactor) — not after every file save.
+- Commit format: `<type>: <short description>` — types: `feat`, `fix`, `refactor`, `style`, `docs`.
+- After every commit, push to `origin dev` immediately (pre-authorized in `.claude/settings.json`).
+- Never commit directly to `main`. Never force-push either branch.
 
-### Promoting dev → main
+### End of session — promote dev → main
 
-Only when the user explicitly says yes. Run via the Bash tool:
+At the end of every session Claude asks: "Promote dev to main?" Only on an explicit "yes":
 
 ```bash
-git checkout main && git merge dev && git push origin main && git checkout dev && git merge main && git push origin dev
+git checkout main && git merge --ff-only dev && git push origin main && git checkout dev
 ```
 
-### End of Session
-
-At the end of every session Claude will ask whether to promote `dev` to `main`. Never act on the promotion without an explicit "yes."
+Because `main` never receives its own commits, the merge is always a fast-forward — no back-merge into `dev` is needed.
 
 ---
 
