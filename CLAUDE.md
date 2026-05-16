@@ -169,7 +169,7 @@ git checkout main && git merge dev && git push origin main && git checkout dev
 
 ### End of Session
 
-A Stop hook prompts whether to promote `dev` to `main`. Never act on the promotion without an explicit "yes."
+At the end of every session Claude will ask whether to promote `dev` to `main`. Never act on the promotion without an explicit "yes."
 
 ---
 
