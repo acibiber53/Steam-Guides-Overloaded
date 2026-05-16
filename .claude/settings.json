@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push *)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"{\\\"systemMessage\\\": \\\"Session ending - should the dev changes be promoted to main? (yes/no)\\\"}\"",
+            "shell": "bash"
+          }
+        ]
+      }
+    ]
+  }
+}
