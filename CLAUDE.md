@@ -164,7 +164,7 @@ Content scripts run on every matching page; `content.js` gates initialisation by
 Only when the user explicitly says yes. Run via the Bash tool:
 
 ```bash
-git checkout main && git merge dev --no-ff -m "chore: promote dev to main" && git push origin main && git checkout dev
+git checkout main && git merge dev && git push origin main && git checkout dev
 ```
 
 ### End of Session
