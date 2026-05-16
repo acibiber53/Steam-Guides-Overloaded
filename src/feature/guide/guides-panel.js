@@ -91,7 +91,7 @@
     const toggle = document.createElement('div');
     toggle.className = 'sgo-sidepanel-toggle';
     toggle.id = 'sgo-guides-toggle';
-    toggle.textContent = '📖 My Guides';
+    toggle.innerHTML = '<span class="toggle-icon">📖</span><span class="toggle-text">My Guides</span>';
 
     const panel = document.createElement('div');
     panel.className = 'sgo-sidepanel';

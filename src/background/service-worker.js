@@ -39,4 +39,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     downloadNext();
     return true;
   }
+
+  if (msg.type === 'SGO_CALL_PAGE_FN') {
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id },
+      world: 'MAIN',
+      func: (fnName) => { if (typeof window[fnName] === 'function') window[fnName](); },
+      args: [msg.fn]
+    });
+    return false;
+  }
 });

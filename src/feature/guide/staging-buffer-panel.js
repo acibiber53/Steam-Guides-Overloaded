@@ -59,10 +59,10 @@
   function updateToggle(toggleEl) {
     const buf = getBuffer();
     if (buf && buf.text) {
-      toggleEl.textContent = `📋 Buffer (${buf.length})`;
+      toggleEl.innerHTML = `<span class="toggle-icon">📋</span><span class="toggle-text">Buffer (${buf.length})</span>`;
       toggleEl.classList.add('sgo-staging-has-content');
     } else {
-      toggleEl.textContent = '📋 Buffer';
+      toggleEl.innerHTML = '<span class="toggle-icon">📋</span><span class="toggle-text">Buffer</span>';
       toggleEl.classList.remove('sgo-staging-has-content');
     }
   }
