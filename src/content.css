@@ -1034,6 +1034,19 @@
   min-width: 0;
 }
 
+.sgo-cascade-row-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.sgo-cascade-row-link:hover { text-decoration: none; }
+.sgo-cascade-row-link:hover .sgo-cascade-row-title { color: #66c0f4; }
+
 .sgo-cascade-row-badge {
   background: #66c0f4;
   color: #1b2838;

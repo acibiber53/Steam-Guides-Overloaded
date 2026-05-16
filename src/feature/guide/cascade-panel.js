@@ -104,12 +104,18 @@
       const pct = Math.min(1, length / MAX_LEN);
       const level = sec.cached ? levelForPct(pct) : 'unknown';
       const freshLevel = cache.freshness(sec.cached ? sec : null);
+      const editHref = `/sharedfiles/editguidesubsection/?id=${encodeURIComponent(guideId)}&sectionid=${encodeURIComponent(sec.id)}`;
 
       row.innerHTML = `
         <div class="sgo-cascade-row-head">
           <button type="button" class="sgo-cascade-expand" title="Show body preview" aria-expanded="false">▸</button>
-          <span class="sgo-cascade-order">${idx + 1}.</span>
-          <span class="sgo-cascade-row-title" title="${escapeHtml(sec.title)}">${escapeHtml(sec.title)}</span>
+          ${isCurrent
+            ? `<span class="sgo-cascade-order">${idx + 1}.</span>
+               <span class="sgo-cascade-row-title" title="${escapeHtml(sec.title)}">${escapeHtml(sec.title)}</span>`
+            : `<a class="sgo-cascade-row-link" href="${editHref}" title="${escapeHtml(sec.title)}">
+                 <span class="sgo-cascade-order">${idx + 1}.</span>
+                 <span class="sgo-cascade-row-title">${escapeHtml(sec.title)}</span>
+               </a>`}
           ${isCurrent ? '<span class="sgo-cascade-row-badge">editing</span>' : ''}
           <span class="sgo-cascade-freshness sgo-cascade-freshness-${freshLevel}" title="${escapeHtml(freshnessLabel(freshLevel))}"></span>
           <span class="sgo-cascade-count sgo-cascade-count-${level}">
