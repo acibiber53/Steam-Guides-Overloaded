@@ -403,7 +403,7 @@
     const toggle = document.createElement('div');
     toggle.className = 'sgo-sidepanel-toggle';
     toggle.id = 'sgo-achievement-toggle';
-    toggle.textContent = '🏆 Achievements';
+    toggle.innerHTML = '<span class="toggle-icon">🏆</span><span class="toggle-text">Achievements</span>';
     toggle.addEventListener('click', () => {
       const panel = getSidePanel();
       const wasOpen = panel?.classList.contains('open');

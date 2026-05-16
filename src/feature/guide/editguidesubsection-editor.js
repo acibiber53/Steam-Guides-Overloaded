@@ -3,6 +3,42 @@
   'use strict';
   const LOG = msg => console.log('[SGO:EditSubsection]', msg);
 
+  const AUTOSAVE_DEBOUNCE_DEFAULT_S = 5;
+
+  function setupAutoSave(titleField, bodyField, statusHelper) {
+    if (bodyField.dataset.sgoAutoSaveSetup) return;
+    bodyField.dataset.sgoAutoSaveSetup = 'true';
+
+    const statusEl = document.createElement('span');
+    statusEl.className = 'sgo-autosave-status';
+    statusHelper.appendChild(statusEl);
+
+    let timer = null;
+    let dirty = false;
+
+    function onInput() {
+      dirty = true;
+      statusEl.textContent = 'Unsaved…';
+      clearTimeout(timer);
+      const delaySec = window.SGO?.SettingsPanel?.getAutoSaveDelay?.() ?? AUTOSAVE_DEBOUNCE_DEFAULT_S;
+      timer = setTimeout(() => {
+        if (!dirty) return;
+        if (!(window.SGO?.SettingsPanel?.isAutoSaveEnabled?.() ?? true)) {
+          statusEl.textContent = '';
+          return;
+        }
+        statusEl.textContent = 'Auto-saving…';
+        dirty = false;
+        chrome.runtime.sendMessage({ type: 'SGO_CALL_PAGE_FN', fn: 'ValidateEditSubSectionForm' });
+        statusEl.textContent = 'Saved';
+        setTimeout(() => { statusEl.textContent = ''; }, 2000);
+      }, delaySec * 1000);
+    }
+
+    if (titleField) titleField.addEventListener('input', onInput);
+    if (bodyField)  bodyField.addEventListener('input', onInput);
+  }
+
   // Safe DOM Injection
   function injectHelper(selector, config) {
     const field = document.querySelector(selector);
@@ -54,35 +90,36 @@
         const len = field.value.length;
         countEl.textContent = `${len}/${maxLen}`;
         const pct = len / maxLen;
-        
-        // Determine status class and colors based on percentage
+
+        const warnPct = window.SGO?.SettingsPanel?.getWarningPct?.() ?? warningPct;
+        const critPct = window.SGO?.SettingsPanel?.getCriticalPct?.() ?? criticalPct;
+
         let statusClass = 'sgo-counter-ok';
-        let bgColor = '#28a745'; // Green
+        let bgColor = '#28a745';
         let textColor = '#fff';
-        
-        if (pct >= criticalPct) {
+
+        if (pct >= critPct) {
           statusClass = 'sgo-counter-critical';
-          bgColor = '#dc3545'; // Red for critical (>90%)
-        } else if (pct >= warningPct) {
+          bgColor = '#dc3545';
+        } else if (pct >= warnPct) {
           statusClass = 'sgo-counter-warning';
-          bgColor = '#ffc107'; // Yellow for warning (75-90%)
-          textColor = '#000'; // Black text for better contrast on yellow
+          bgColor = '#ffc107';
+          textColor = '#000';
         }
-        
-        // Update counter styles
+
         countEl.style.background = bgColor;
         countEl.style.color = textColor;
         countEl.className = `sgo-counter ${statusClass}`;
-        
-        // Update helper container styles to match
+
         if (helper) {
           helper.className = `sgo-field-helper ${statusClass}`;
-          helper.style.background = `rgba(${pct >= criticalPct ? '220,53,69' : pct >= warningPct ? '255,193,7' : '40,167,69'},0.1)`;
+          helper.style.background = `rgba(${pct >= critPct ? '220,53,69' : pct >= warnPct ? '255,193,7' : '40,167,69'},0.1)`;
           helper.style.borderColor = bgColor;
         }
       };
 
       field.addEventListener('input', update);
+      document.addEventListener('sgo:settings-changed', update);
       update();
       LOG(`Counter initialized and update() called`);
     };
@@ -183,6 +220,9 @@
     } else {
       LOG(`Body field not found`);
     }
+
+    const bodyHelperEl = bodyField?.nextSibling;
+    if (bodyHelperEl) setupAutoSave(titleField, bodyField, bodyHelperEl);
 
     LOG('EditSubsection helpers active');
     return true;

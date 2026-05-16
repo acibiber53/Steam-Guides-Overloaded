@@ -3,7 +3,7 @@
   "name": "Steam Guides Overloaded",
   "version": "0.2.0",
   "description": "Enhanced navigation, real-time validation, and achievement workflow for Steam guide authors.",
-  "permissions": ["activeTab", "storage", "downloads"],
+  "permissions": ["activeTab", "storage", "downloads", "scripting"],
   "host_permissions": ["*://steamcommunity.com/*", "*://store.steampowered.com/*"],
   "background": { "service_worker": "src/background/service-worker.js" },
   "action": { "default_popup": "src/core/popup/popup.html" },
@@ -26,6 +26,7 @@
       "src/feature/guide/section-cache.js",
       "src/feature/guide/cascade-panel.js",
       "src/feature/guide/staging-buffer-panel.js",
+      "src/feature/settings/settings-panel.js",
       "src/feature/guide/editguidesubsection-editor.js",
       "src/content.js"
     ],

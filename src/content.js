@@ -92,6 +92,7 @@
           guideId: params.get('id'),
           sectionId: params.get('sectionid')
         });
+        window.SGO?.SettingsPanel?.init?.();
         break;
       default:
         break;
